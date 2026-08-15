@@ -1,0 +1,24 @@
+# Không có file này thì `COPY . .` kéo cả .env vào image — bí mật nằm luôn
+# trong layer, ai pull image cũng đọc được. Nó cũng khiến build trên máy dev
+# "chạy được" nhờ .env local, che mất lỗi thiếu biến khi build ở nơi khác.
+.env
+.env.*
+!.env.example
+
+node_modules
+.next
+.git
+.gitignore
+
+# Client Prisma sinh lại trong lúc build; bản của máy dev có thể lệch.
+src/generated
+
+# Chỉ dùng lúc phát triển, không liên quan tới image.
+scripts/e2e.mjs
+e2e-*.png
+*.tsbuildinfo
+docker-compose.yml
+deploy
+README.md
+AGENTS.md
+CLAUDE.md

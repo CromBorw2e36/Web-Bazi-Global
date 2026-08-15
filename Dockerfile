@@ -25,7 +25,12 @@ COPY . .
 
 # src/generated/prisma is gitignored, so it has to be produced here — without
 # this the build fails on the first import of the client.
-RUN npx prisma generate
+#
+# DATABASE_URL is set even though generate never connects: prisma.config.ts
+# resolves it while loading, and without it generate dies with
+# "PrismaConfigEnvError: Cannot resolve environment variable: DATABASE_URL".
+RUN DATABASE_URL="postgresql://build:build@localhost:5432/build" \
+    npx prisma generate
 
 # next build wants these present even though it never connects to anything.
 # They are set inline on the command rather than as ARG or ENV so they stay

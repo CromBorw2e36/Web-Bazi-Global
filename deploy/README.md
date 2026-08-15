@@ -52,36 +52,31 @@ Every required variable is declared `${VAR:?...}` in the compose file, so a
 missing value stops the deploy with a named error instead of starting a
 container that half-works.
 
-## 3. Install the services
+## 3. Paste the services in
+
+Open `deploy/services.yml`. It opens with the three things to do, then the block
+to copy between two marked lines. In short:
+
+1. The block goes under `services:` — **before** the `volumes:` line
+2. Add `bazi-pgdata:` under `volumes:`
+3. Add `- bazi` to the `nginx` service's `depends_on:`
+
+They sit alongside `lovecounter` and `project-manager`, which are also separate
+repos with their block in this shared file.
+
+Then check:
 
 ```bash
-cd /root/BuilderCMS/Web-Bazi-Global
-./deploy/install.sh /root/BuilderCMS/BuilderCMS/docker-compose.yml
+cd BuilderCMS
+docker compose config --services | grep bazi     # 4 lines
 ```
 
-The script puts the four services under `services:`, adds `bazi-pgdata:` to
-`volumes:`, adds `bazi` to nginx's `depends_on:`, and appends the deploy notes.
-It backs the file up first and runs `docker compose config` after — **if that
-fails it restores the backup**, so the file is never left broken.
-
-Re-running is safe: it strips the previous install and lays it down again, which
-is also how you pick up a change to the service definitions. It cleans up a
-hand-paste that landed in the wrong section too.
-
-This replaces a hand-paste procedure that was genuinely easy to get wrong: the
-snippet mixed real YAML with commented instructions, and pasting the services
-under `volumes:` produces `volumes.bazi additional properties not allowed` —
-an error that names neither the cause nor the fix.
-
-`deploy/services.yml` holds the service definitions on their own if you would
-rather place them by hand. They belong under `services:`, alongside
-`lovecounter` and `project-manager`, which are also separate repos with their
-block in the shared file.
+`volumes.bazi additional properties not allowed` means the block landed under
+`volumes:` — move it above that line.
 
 `build.context: ../Web-Bazi-Global` is relative to the compose file, so with a
 `BuilderCMS/BuilderCMS/docker-compose.yml` layout the repo goes at
-`BuilderCMS/Web-Bazi-Global`. The script fails loudly if it cannot find the
-compose file you pointed it at.
+`BuilderCMS/Web-Bazi-Global`.
 
 ## 4. Certificate, then nginx config
 

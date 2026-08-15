@@ -47,39 +47,42 @@ Every required one is declared `${VAR:?...}` in the compose file, so a missing
 value stops the deploy with a named error instead of starting a container that
 half-works.
 
-## 3. Wire it into the stack
+## 3. Paste the services in
 
-Compose reads one file, so add one line to the top of
-`BuilderCMS/docker-compose.yml`:
+`deploy/docker-compose.bazi.yml` is a snippet, not a runnable file. It has four
+parts, each marked in the file, that go into `BuilderCMS/docker-compose.yml`:
 
-```yaml
-include:
-  - ../Web-Bazi-Global/deploy/docker-compose.bazi.yml
-```
+| Part | Goes |
+| --- | --- |
+| 1 — four services | into `services:`, after the LOVE COUNTER block |
+| 2 — `bazi-pgdata:` | into the `volumes:` block at the bottom |
+| 3 — `- bazi` | into the `nginx` service's `depends_on:` |
+| 4 — deploy notes | into the DEPLOY NOTES comment block at the bottom |
 
-That path is relative to `BuilderCMS/docker-compose.yml`, so adjust it to wherever
-you cloned this repo on the server. Then add `bazi` to the `nginx` service's
-`depends_on:` so nginx starts after it.
+This follows what `lovecounter` and `project-manager` already do: the source
+lives in its own repo, the service block lives in the one compose file. Keeping
+every domain visible in a single file is the point of that setup, so the app
+should not be the exception.
 
-`include` pulls the four services and the volume into the **same** compose
-project, which is what makes this work: they share the project's default
-network, so nginx resolves `bazi:3000`, and `${BAZI_*}` variables come from
-`BuilderCMS/.env` as usual. Verify before touching anything:
+`build.context: ../Web-Bazi-Global` is relative to `BuilderCMS/`, the same way
+`lovecounter` uses `../LoveCounter/love-counter` — so clone this repo next to
+`BuilderCMS` on the server.
+
+Check the result before building anything:
 
 ```bash
 cd BuilderCMS
-docker compose config | grep -E "bazi|volumes"
+docker compose config --services | grep bazi     # 4 services
+docker compose config | grep context             # paths, not doubled
 ```
 
-You should see `bazi-db`, `bazi-migrate`, `bazi`, `bazi-cron`, and
-`bazi-pgdata`, with `build.context` pointing at the repo root — **not** at a
-doubled path like `Web-Bazi-Global/Web-Bazi-Global`. If it doubles, the include
-path is wrong. A missing secret fails here too, naming the variable:
-`required variable BAZI_AUTH_SECRET is missing a value`.
+`docker compose config` resolves the whole file — variables substituted,
+`depends_on` expanded — and prints it without starting a thing. A missing secret
+fails here, naming what to set:
 
-> Copy-pasting the services into `docker-compose.yml` instead also works, but
-> then the deploy config lives in two repos and drifts. `include` keeps it
-> versioned next to the app it describes.
+```
+required variable BAZI_DB_PASSWORD is missing a value: set BAZI_DB_PASSWORD
+```
 
 ## 4. Certificate, then nginx config
 

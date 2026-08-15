@@ -47,42 +47,36 @@ Every required one is declared `${VAR:?...}` in the compose file, so a missing
 value stops the deploy with a named error instead of starting a container that
 half-works.
 
-## 3. Paste the services in
-
-`deploy/docker-compose.bazi.yml` is a snippet, not a runnable file. It has four
-parts, each marked in the file, that go into `BuilderCMS/docker-compose.yml`:
-
-| Part | Goes |
-| --- | --- |
-| 1 — four services | into `services:`, after the LOVE COUNTER block |
-| 2 — `bazi-pgdata:` | into the `volumes:` block at the bottom |
-| 3 — `- bazi` | into the `nginx` service's `depends_on:` |
-| 4 — deploy notes | into the DEPLOY NOTES comment block at the bottom |
-
-This follows what `lovecounter` and `project-manager` already do: the source
-lives in its own repo, the service block lives in the one compose file. Keeping
-every domain visible in a single file is the point of that setup, so the app
-should not be the exception.
-
-`build.context: ../Web-Bazi-Global` is relative to `BuilderCMS/`, the same way
-`lovecounter` uses `../LoveCounter/love-counter` — so clone this repo next to
-`BuilderCMS` on the server.
-
-Check the result before building anything:
+## 3. Install the services
 
 ```bash
-cd BuilderCMS
-docker compose config --services | grep bazi     # 4 services
-docker compose config | grep context             # paths, not doubled
+cd /root/BuilderCMS/Web-Bazi-Global
+./deploy/install.sh /root/BuilderCMS/BuilderCMS/docker-compose.yml
 ```
 
-`docker compose config` resolves the whole file — variables substituted,
-`depends_on` expanded — and prints it without starting a thing. A missing secret
-fails here, naming what to set:
+The script puts the four services under `services:`, adds `bazi-pgdata:` to
+`volumes:`, adds `bazi` to nginx's `depends_on:`, and appends the deploy notes.
+It backs the file up first and runs `docker compose config` after — **if that
+fails it restores the backup**, so the file is never left broken.
 
-```
-required variable BAZI_DB_PASSWORD is missing a value: set BAZI_DB_PASSWORD
-```
+Re-running is safe: it strips the previous install and lays it down again, which
+is also how you pick up a change to the service definitions. It cleans up a
+hand-paste that landed in the wrong section too.
+
+This replaces a hand-paste procedure that was genuinely easy to get wrong: the
+snippet mixed real YAML with commented instructions, and pasting the services
+under `volumes:` produces `volumes.bazi additional properties not allowed` —
+an error that names neither the cause nor the fix.
+
+`deploy/services.yml` holds the service definitions on their own if you would
+rather place them by hand. They belong under `services:`, alongside
+`lovecounter` and `project-manager`, which are also separate repos with their
+block in the shared file.
+
+`build.context: ../Web-Bazi-Global` is relative to the compose file, so with a
+`BuilderCMS/BuilderCMS/docker-compose.yml` layout the repo goes at
+`BuilderCMS/Web-Bazi-Global`. The script fails loudly if it cannot find the
+compose file you pointed it at.
 
 ## 4. Certificate, then nginx config
 

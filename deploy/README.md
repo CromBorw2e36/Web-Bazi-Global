@@ -88,7 +88,7 @@ cd BuilderCMS
 
 # Bring the app up first — the ACME challenge is served by the running nginx,
 # which needs the bazi service resolvable for its own depends_on.
-docker compose up -d --build bazi-db bazi-migrate bazi bazi-cron
+docker compose build --no-cache bazi-db bazi-migrate bazi bazi-cron && docker compose up -d bazi-db bazi-migrate bazi bazi-cron
 
 docker compose run --rm certbot certonly --webroot -w /var/www/certbot \
   -d bazi.sincely.io.vn

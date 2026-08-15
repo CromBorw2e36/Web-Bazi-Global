@@ -5,9 +5,16 @@
 # bazi.sincely.io.vn is a subdomain of it. Running a second nginx would mean two
 # processes fighting over ports 80 and 443.
 #
-# Merge the two blocks below into k:/Project/Sub/_1/BuilderCMS/docker-compose.yml
-# — the services into `services:`, the volume into `volumes:` — then add
-# `bazi` to the nginx service's `depends_on`. See deploy/README.md.
+# Pull it into that stack with one line at the top of its docker-compose.yml:
+#
+#   include:
+#     - ../Web-Bazi-Global/deploy/docker-compose.bazi.yml
+#
+# `include` merges these services and the volume into the *same* compose
+# project, so they share its default network and nginx resolves `bazi:3000`.
+# Note that build.context below is `..` — relative to this file, not to the
+# including one, which is how Compose resolves paths in an included file.
+# See deploy/README.md.
 #
 # Postgres is separate from the shared SQL Server on purpose. This app's schema
 # is Postgres-specific (Prisma migrations, @db.Date, enums), and keeping its
@@ -39,7 +46,7 @@ services:
   # start a server against a schema it does not match.
   bazi-migrate:
     build:
-      context: ../Web-Bazi-Global
+      context: ..
       dockerfile: Dockerfile
       target: migrator
     image: bazi-migrate:latest
@@ -53,7 +60,7 @@ services:
 
   bazi:
     build:
-      context: ../Web-Bazi-Global
+      context: ..
       dockerfile: Dockerfile
       target: runner
     image: bazi-web:latest

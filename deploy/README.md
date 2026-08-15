@@ -47,14 +47,39 @@ Every required one is declared `${VAR:?...}` in the compose file, so a missing
 value stops the deploy with a named error instead of starting a container that
 half-works.
 
-## 3. Merge the compose services
+## 3. Wire it into the stack
 
-From `deploy/docker-compose.bazi.yml`, copy into
+Compose reads one file, so add one line to the top of
 `BuilderCMS/docker-compose.yml`:
 
-- the four services (`bazi-db`, `bazi-migrate`, `bazi`, `bazi-cron`) into `services:`
-- `bazi-pgdata:` into the `volumes:` block
-- `bazi` into the `nginx` service's `depends_on:`
+```yaml
+include:
+  - ../Web-Bazi-Global/deploy/docker-compose.bazi.yml
+```
+
+That path is relative to `BuilderCMS/docker-compose.yml`, so adjust it to wherever
+you cloned this repo on the server. Then add `bazi` to the `nginx` service's
+`depends_on:` so nginx starts after it.
+
+`include` pulls the four services and the volume into the **same** compose
+project, which is what makes this work: they share the project's default
+network, so nginx resolves `bazi:3000`, and `${BAZI_*}` variables come from
+`BuilderCMS/.env` as usual. Verify before touching anything:
+
+```bash
+cd BuilderCMS
+docker compose config | grep -E "bazi|volumes"
+```
+
+You should see `bazi-db`, `bazi-migrate`, `bazi`, `bazi-cron`, and
+`bazi-pgdata`, with `build.context` pointing at the repo root — **not** at a
+doubled path like `Web-Bazi-Global/Web-Bazi-Global`. If it doubles, the include
+path is wrong. A missing secret fails here too, naming the variable:
+`required variable BAZI_AUTH_SECRET is missing a value`.
+
+> Copy-pasting the services into `docker-compose.yml` instead also works, but
+> then the deploy config lives in two repos and drifts. `include` keeps it
+> versioned next to the app it describes.
 
 ## 4. Certificate, then nginx config
 

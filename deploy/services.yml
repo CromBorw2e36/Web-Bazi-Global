@@ -121,7 +121,8 @@
 # nghĩa là khối bị dán nhầm xuống dưới `volumes:` — kéo lên trên dòng đó.
 #
 # Env cần có trong .env cùng thư mục:
-#   BAZI_DB_PASSWORD=<openssl rand -base64 32>
+#   BAZI_DB_PASSWORD=<openssl rand -hex 24>   # hex, KHÔNG base64: mật khẩu này
+#                                            # nằm trong URL, dấu / sẽ cắt sai
 #   BAZI_AUTH_SECRET=<openssl rand -hex 48>
 #   BAZI_CRON_SECRET=<openssl rand -hex 24>
 #   BAZI_ANTHROPIC_API_KEY=...   (không có cũng chạy, luận giải mộc hơn)

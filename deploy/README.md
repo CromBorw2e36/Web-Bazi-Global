@@ -27,7 +27,7 @@ against a name that does not yet point anywhere.
 Append to `BuilderCMS/.env` (the file compose already reads):
 
 ```dotenv
-BAZI_DB_PASSWORD=<openssl rand -base64 32>
+BAZI_DB_PASSWORD=<openssl rand -hex 24>
 BAZI_AUTH_SECRET=<openssl rand -hex 48>
 BAZI_CRON_SECRET=<openssl rand -hex 24>
 
@@ -43,9 +43,14 @@ BAZI_GOOGLE_ID=
 BAZI_GOOGLE_SECRET=
 ```
 
-Every required one is declared `${VAR:?...}` in the compose file, so a missing
-value stops the deploy with a named error instead of starting a container that
-half-works.
+Hex, not base64, for the database password: it is interpolated into
+`postgresql://bazi:PASSWORD@bazi-db:5432/bazi`, and base64 emits `/`, which ends
+the userinfo section early. The failure then reads as a bad address rather than
+a bad password.
+
+Every required variable is declared `${VAR:?...}` in the compose file, so a
+missing value stops the deploy with a named error instead of starting a
+container that half-works.
 
 ## 3. Install the services
 

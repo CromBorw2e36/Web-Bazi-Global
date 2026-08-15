@@ -1,21 +1,40 @@
-# Bốn service của Bát Tự (bazi.sincely.io.vn).
+# ┌─────────────────────────────────────────────────────────────┐
+# │ DÁN VÀO BuilderCMS/docker-compose.yml — 3 việc              │
+# ├─────────────────────────────────────────────────────────────┤
+# │ 1. Cả khối bên dưới  →  dán vào NGAY TRƯỚC dòng `volumes:`  │
+# │ 2. Thêm  bazi-pgdata:      vào dưới dòng `volumes:`         │
+# │ 3. Thêm  - bazi            vào depends_on: của nginx        │
+# └─────────────────────────────────────────────────────────────┘
 #
-# File này chỉ chứa YAML thật, không có hướng dẫn lẫn vào. Nội dung dưới đây
-# thuộc về mục `services:` trong BuilderCMS/docker-compose.yml — giống hệt cách
-# lovecounter và project-manager đang nằm ở đó: repo riêng, service block trong
-# file chung.
+# Nhìn cho dễ hình dung, file sau khi dán xong:
 #
-# Không dán tay. Chạy deploy/install.sh, nó đặt đúng chỗ và kiểm tra hộ.
+#   services:
+#     lovecounter:
+#       ...
+#     bazi-db:            ← khối này
+#     bazi-migrate:       ←
+#     bazi:               ←
+#     bazi-cron:          ←
+#     nginx:
+#       depends_on:
+#         - lovecounter
+#         - bazi          ← việc 3
+#
+#   volumes:
+#     lovecounter-data:
+#     bazi-pgdata:        ← việc 2
+#
+# Thụt lề 2 dấu cách, giống lovecounter. Đường dẫn ../Web-Bazi-Global tính từ
+# chỗ đặt docker-compose.yml.
+#
+# ══════════════════ TỪ ĐÂY TRỞ XUỐNG LÀ PHẦN CẦN DÁN ══════════════════
 
-  # >>> BAZI START — quản lý bởi deploy/install.sh, đừng sửa 2 dòng mốc này >>>
   # ================================================================
   #  BÁT TỰ (bazi.sincely.io.vn) — repo riêng
   # ================================================================
   # Source: ../Web-Bazi-Global (clone git riêng)
 
-  # Postgres riêng, không dùng chung sqlserver: schema app này đặc thù Postgres
-  # (Prisma migrations, @db.Date, enum). Không mở cổng — chỉ container trong
-  # stack gọi được.
+  # Postgres riêng, không dùng chung sqlserver. Không mở cổng ra ngoài.
   bazi-db:
     image: postgres:17-alpine
     container_name: bazi-db
@@ -32,8 +51,7 @@
       retries: 10
     restart: unless-stopped
 
-  # Chạy migration rồi thoát. Service bazi đợi nó xong mới lên, nên không bao
-  # giờ có chuyện server chạy trên schema không khớp.
+  # Chạy migration rồi thoát. bazi đợi nó xong mới lên.
   bazi-migrate:
     build:
       context: ../Web-Bazi-Global
@@ -59,20 +77,12 @@
       NODE_ENV: production
       PORT: 3000
       DATABASE_URL: postgresql://bazi:${BAZI_DB_PASSWORD:?set BAZI_DB_PASSWORD}@bazi-db:5432/bazi?schema=public
-
-      # Auth.js cần biết origin thật khi chạy sau proxy — nó không tự suy ra
-      # được từ request.
       AUTH_URL: https://bazi.sincely.io.vn
       AUTH_SECRET: ${BAZI_AUTH_SECRET:?set BAZI_AUTH_SECRET}
       AUTH_TRUST_HOST: 'true'
-
       AUTH_GOOGLE_ID: ${BAZI_GOOGLE_ID:-}
       AUTH_GOOGLE_SECRET: ${BAZI_GOOGLE_SECRET:-}
-
-      # Không bắt buộc. Thiếu key thì app dùng bộ render tất định — luận giải
-      # vẫn có, chỉ mộc hơn.
       ANTHROPIC_API_KEY: ${BAZI_ANTHROPIC_API_KEY:-}
-
       CRON_SECRET: ${BAZI_CRON_SECRET:?set BAZI_CRON_SECRET}
       RESEND_API_KEY: ${BAZI_RESEND_API_KEY:-}
       EMAIL_FROM: ${BAZI_EMAIL_FROM:-Bát Tự <onboarding@resend.dev>}
@@ -87,10 +97,7 @@
       - no-new-privileges:true
     restart: unless-stopped
 
-  # Gọi digest mỗi giờ một lần. Endpoint tự xác định ai tới giờ nhận bằng cách
-  # so giờ gửi đã chọn với múi giờ của từng người, nên một nhịp mỗi giờ phục vụ
-  # được mọi múi giờ; ghi bản luận giải chính là dấu đã gửi, nên gọi lại trong
-  # cùng giờ không tạo email thứ hai.
+  # Gọi digest mỗi giờ một lần cho email tử vi hằng ngày.
   bazi-cron:
     image: alpine:3.20
     container_name: bazi-cron
@@ -106,4 +113,16 @@
     depends_on:
       - bazi
     restart: unless-stopped
-  # <<< BAZI END <<<
+
+# ══════════════════ HẾT PHẦN CẦN DÁN ══════════════════
+#
+# Dán xong kiểm tra:   docker compose config --services | grep bazi
+# Phải ra 4 dòng. Nếu báo "volumes.bazi additional properties not allowed"
+# nghĩa là khối bị dán nhầm xuống dưới `volumes:` — kéo lên trên dòng đó.
+#
+# Env cần có trong .env cùng thư mục:
+#   BAZI_DB_PASSWORD=<openssl rand -base64 32>
+#   BAZI_AUTH_SECRET=<openssl rand -hex 48>
+#   BAZI_CRON_SECRET=<openssl rand -hex 24>
+#   BAZI_ANTHROPIC_API_KEY=...   (không có cũng chạy, luận giải mộc hơn)
+#   BAZI_RESEND_API_KEY=...      (không có thì không gửi email)

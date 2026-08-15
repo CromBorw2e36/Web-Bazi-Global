@@ -1,0 +1,220 @@
+// The legacy `prisma-client-js` generator re-exports through a synthetic
+// `.prisma/client/default` path that TypeScript's bundler resolution cannot
+// follow. Prisma 7's `prisma-client` generator emits into the source tree
+// instead, which resolves like any other module.
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+// Prisma 7 moved the connection URL out of the schema: migrations read it from
+// prisma.config.ts, and the client gets it through a driver adapter.
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Auth.js
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  /// Null for accounts that only ever sign in through an OAuth provider.
+  passwordHash String?
+
+  locale String @default("vi")
+
+  /// IANA zone used to decide which calendar day "today" is for this user.
+  /// A reading generated at 23:00 in Hanoi must not be the next day's.
+  timeZone String @default("Asia/Ho_Chi_Minh")
+
+  dailyEmail     Boolean @default(false)
+  dailyEmailHour Int     @default(7)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  profiles Profile[]
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @id
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+// ---------------------------------------------------------------------------
+// Charts
+// ---------------------------------------------------------------------------
+
+enum Relation {
+  SELF
+  FAMILY
+  FRIEND
+  OTHER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+/// A saved birth record. Stores the raw input rather than the cast chart, so a
+/// correction to the engine reaches every existing profile on next render.
+model Profile {
+  id       String   @id @default(cuid())
+  userId   String
+  name     String
+  relation Relation @default(SELF)
+
+  birthYear   Int
+  birthMonth  Int
+  birthDay    Int
+  birthHour   Int
+  birthMinute Int
+  gender      Gender
+
+  /// Degrees east of Greenwich; negative for west.
+  longitude Float
+  /// Standard UTC offset in hours at the birth place at the time of birth.
+  utcOffset Float
+  placeId   String?
+  placeName String
+
+  useEquationOfTime Boolean @default(true)
+
+  /// Exactly one profile per user carries this; enforced in application code
+  /// because Postgres partial unique indexes are awkward to express here.
+  isDefault Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readings  DailyReading[]
+  journal   JournalEntry[]
+  bookmarks DayBookmark[]
+  views     ViewHistory[]
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Daily readings
+// ---------------------------------------------------------------------------
+
+/// One generated reading per profile per calendar day.
+///
+/// `facts` holds the deterministic output of the rules engine; the prose is
+/// only a rendering of it. Keeping both means a reading can be re-phrased later
+/// without recomputing, and any claim in the text can be traced to a fact.
+model DailyReading {
+  id        String   @id @default(cuid())
+  profileId String
+  date      DateTime @db.Date
+
+  facts Json
+
+  /// Prose is generated per locale on demand, so either column may be null.
+  bodyVi String?
+  bodyEn String?
+
+  /// Which model wrote the prose, for reproducibility when models change.
+  model String?
+
+  /// Overall tenor derived from the facts, not from the prose.
+  score Int
+
+  createdAt DateTime @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, date])
+  @@index([profileId, date])
+}
+
+/// What the user says actually happened, against what the reading said.
+model JournalEntry {
+  id        String   @id @default(cuid())
+  profileId String
+  date      DateTime @db.Date
+
+  /// -2..2, from a difficult day to a good one.
+  mood Int?
+  note String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, date])
+  @@index([profileId, date])
+}
+
+enum BookmarkKind {
+  GOOD
+  BAD
+  NOTE
+}
+
+model DayBookmark {
+  id        String       @id @default(cuid())
+  profileId String
+  date      DateTime     @db.Date
+  kind      BookmarkKind @default(NOTE)
+  label     String?
+
+  createdAt DateTime @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, date])
+  @@index([profileId, date])
+}
+
+model ViewHistory {
+  id        String   @id @default(cuid())
+  profileId String
+  date      DateTime @db.Date
+  viewedAt  DateTime @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, date])
+  @@index([profileId, viewedAt])
+}

@@ -1,0 +1,109 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+  Ink on paper.
+
+  The interface chrome is deliberately colourless — warm paper, ink text,
+  hairline rules — because the five elements own the only saturated colours on
+  the page. Their hues are not a design choice: 木 is green, 火 red, 土 yellow,
+  金 white, 水 black by convention going back to the Five Phases themselves.
+  Keeping everything else neutral means a colour on this page always means an
+  element and never decoration.
+
+  Cinnabar is the one exception, used the way a seal is used: sparingly, for the
+  mark of authority — the day master, the active state, the primary action.
+*/
+@theme {
+  --color-paper: #faf7f0;
+  --color-paper-raised: #fffdf8;
+  --color-paper-sunken: #f2ede2;
+  --color-ink: #1c1917;
+  --color-ink-soft: #57534e;
+  --color-ink-faint: #8a8175;
+  --color-rule: #e0d8c8;
+  --color-rule-strong: #c9bda6;
+
+  --color-cinnabar: #b23a31;
+  --color-cinnabar-soft: #d9695f;
+
+  --color-wood: #3f6b4a;
+  --color-fire: #b23a31;
+  --color-earth: #8a6620;
+  --color-metal: #64707f;
+  --color-water: #2c4a6e;
+
+  --font-serif-cjk: 'Noto Serif TC', 'Noto Serif', ui-serif, Georgia, serif;
+  --font-sans-cjk: 'Noto Sans TC', 'Noto Sans', ui-sans-serif, system-ui, sans-serif;
+
+  --radius-seal: 2px;
+}
+
+.dark {
+  --color-paper: #16130f;
+  --color-paper-raised: #1e1a15;
+  --color-paper-sunken: #100e0b;
+  --color-ink: #f0e9dc;
+  --color-ink-soft: #b8ae9d;
+  --color-ink-faint: #857d6f;
+  --color-rule: #332d24;
+  --color-rule-strong: #4a4235;
+
+  --color-cinnabar: #d9695f;
+  --color-cinnabar-soft: #b23a31;
+
+  --color-wood: #7fb08a;
+  --color-fire: #e07a6f;
+  --color-earth: #d4a853;
+  --color-metal: #aab4c2;
+  --color-water: #7fa8d4;
+}
+
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans-cjk);
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+  A faint woven texture, the way sized paper catches light. Two hairline grids
+  offset from each other read as fibre rather than as a pattern; at 2.5% opacity
+  it is felt more than seen, and it costs nothing since it is a gradient.
+*/
+.paper-grain {
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 3px, color-mix(in oklab, var(--color-ink) 2.5%, transparent) 3px 4px),
+    repeating-linear-gradient(90deg, transparent 0 3px, color-mix(in oklab, var(--color-ink) 2%, transparent) 3px 4px);
+}
+
+/* Vertical CJK setting, used for the pillar column labels. */
+.vertical-cjk {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 0.18em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Keyboard focus stays visible everywhere; pointer focus does not shout. */
+:focus-visible {
+  outline: 2px solid var(--color-cinnabar);
+  outline-offset: 2px;
+}

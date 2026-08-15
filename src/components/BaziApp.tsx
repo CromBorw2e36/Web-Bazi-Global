@@ -49,7 +49,7 @@ export function BaziApp({ currentYear, signedIn }: { currentYear: number; signed
   const correction = chart?.correction
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+    <div className="mx-auto max-w-6xl px-4 py-6 pb-[calc(72px+env(safe-area-inset-bottom))] sm:px-6 sm:py-8 sm:pb-8">
       {/* The seal and app name now live in the nav above, so this is just the
           page's own title and the one control that belongs to it. */}
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3 border-b border-rule pb-4">
@@ -70,7 +70,7 @@ export function BaziApp({ currentYear, signedIn }: { currentYear: number; signed
               type="button"
               onClick={() => setLocale(l)}
               aria-pressed={locale === l}
-              className={`cursor-pointer px-2.5 py-1.5 text-xs font-semibold transition-colors duration-200 ${
+              className={`min-h-11 cursor-pointer px-3.5 py-1.5 text-xs font-semibold transition-colors duration-200 sm:min-h-9 ${
                 locale === l ? 'bg-cinnabar text-white' : 'text-ink-soft hover:text-ink'
               }`}
             >
@@ -124,7 +124,7 @@ export function BaziApp({ currentYear, signedIn }: { currentYear: number; signed
 
         {/* Chart */}
         {chart && (
-          <div className="space-y-6">
+          <div className="min-w-0 space-y-6">
             {/* Caveats surface next to the result, not buried in a footnote. */}
             {(chart.onTermBoundary || chart.correction.dayShifted) && (
               <div className="space-y-2">
@@ -164,7 +164,7 @@ export function BaziApp({ currentYear, signedIn }: { currentYear: number; signed
                 </div>
                 <Link
                   href={signedIn ? '/profiles/new' : '/register'}
-                  className="shrink-0 cursor-pointer rounded-seal bg-cinnabar px-4 py-2 text-sm font-semibold text-white transition-opacity duration-200 hover:opacity-90"
+                  className="inline-flex min-h-11 shrink-0 cursor-pointer items-center rounded-seal bg-cinnabar px-4 py-2 text-sm font-semibold text-white transition-opacity duration-200 hover:opacity-90"
                 >
                   {signedIn
                     ? locale === 'vi'

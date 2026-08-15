@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/db'
-import { AppNav } from '@/components/AppNav'
+import { AppNav, NAV_CLEARANCE } from '@/components/AppNav'
 import { ProfileList } from '@/components/ProfileList'
 import { chartFor } from '@/lib/profile'
 import { ELEMENT_TERMS, STEM_TERMS, BRANCH_TERMS } from '@/lib/bazi'
@@ -38,7 +38,7 @@ export default async function ProfilesPage() {
   return (
     <>
       <AppNav active="/profiles" />
-      <main className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
+      <main className={`mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8 ${NAV_CLEARANCE}`}>
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
             <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold text-ink">Hồ Sơ</h1>
@@ -46,7 +46,7 @@ export default async function ProfilesPage() {
           </div>
           <Link
             href="/profiles/new"
-            className="shrink-0 cursor-pointer rounded-seal bg-cinnabar px-3.5 py-2 text-sm font-semibold text-white transition-opacity duration-200 hover:opacity-90"
+            className="inline-flex min-h-11 shrink-0 cursor-pointer items-center rounded-seal bg-cinnabar px-3.5 py-2 text-sm font-semibold text-white transition-opacity duration-200 hover:opacity-90 sm:min-h-0"
           >
             Thêm lá số
           </Link>

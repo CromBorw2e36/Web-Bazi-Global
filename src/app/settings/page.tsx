@@ -1,6 +1,6 @@
 import { auth } from '@/auth'
 import { prisma } from '@/lib/db'
-import { AppNav } from '@/components/AppNav'
+import { AppNav, NAV_CLEARANCE } from '@/components/AppNav'
 import { SettingsForm } from '@/components/SettingsForm'
 import { Panel } from '@/components/ui'
 
@@ -16,7 +16,7 @@ export default async function SettingsPage() {
   return (
     <>
       <AppNav />
-      <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
+      <main className={`mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8 ${NAV_CLEARANCE}`}>
         <h1 className="mb-5 font-[family-name:var(--font-display)] text-2xl font-bold text-ink">Cài Đặt</h1>
         <Panel>
           <SettingsForm

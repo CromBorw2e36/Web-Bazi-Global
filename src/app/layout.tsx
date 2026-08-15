@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Noto_Sans, Noto_Serif } from 'next/font/google'
 import './globals.css'
 
@@ -23,6 +23,23 @@ const notoSans = Noto_Sans({
   variable: '--font-body',
   display: 'swap',
 })
+
+/**
+ * `viewportFit: 'cover'` is what makes `env(safe-area-inset-bottom)` resolve to
+ * anything other than zero on a notched phone. Without it the bottom tab row
+ * sits under the home indicator.
+ */
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  // Paints the browser chrome to match the paper, so the status bar does not
+  // sit on a strip of white above a cream page.
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#faf7f0' },
+    { media: '(prefers-color-scheme: dark)', color: '#16130f' },
+  ],
+}
 
 export const metadata: Metadata = {
   title: 'Bát Tự — Tứ Trụ Mệnh Lý | Bazi Four Pillars',

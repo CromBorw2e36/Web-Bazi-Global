@@ -7,11 +7,16 @@ Bilingual Vietnamese / English; light by default, dark on request.
 
 ```bash
 cp .env.example .env      # then fill in AUTH_SECRET (npx auth secret)
-docker compose up -d      # Postgres on :5433
+docker compose up -d      # local dev Postgres on :5433
 npm install
 npx prisma migrate deploy
 npm run dev               # http://localhost:3100
 ```
+
+Production is a different stack — see [deploy/README.md](deploy/README.md). The
+app runs at **bazi.sincely.io.vn** as a service inside the shared BuilderCMS
+compose project, behind the nginx and certbot already there. The root
+`docker-compose.yml` is only here so local development has a database.
 
 | Script | What it does |
 | --- | --- |
@@ -23,8 +28,23 @@ npm run dev               # http://localhost:3100
 `gen:data` and `verify` need Node 22+ for `node:sqlite`. `e2e` expects a running
 server (`npm run build && npm start`); point it elsewhere with `E2E_BASE_URL`.
 
-The app runs on **:3100**, not Next's default :3000 — that port is taken on this
-machine. Change it in the `dev` and `start` scripts if you need another.
+Locally the app runs on **:3100**, not Next's default :3000 — that port is taken
+on this machine. Change it in the `dev` and `start` scripts if you need another.
+
+## Mobile
+
+Below `sm` the four nav links move to a fixed bottom tab row, where the thumb
+already is and where each target gets a full 44px; the top bar keeps only
+identity, the theme toggle, and the account control. Every page applies
+`NAV_CLEARANCE` so its last card clears those tabs, and the layout sets
+`viewportFit: 'cover'` so `env(safe-area-inset-bottom)` resolves to something
+on a notched phone.
+
+`npm run e2e` measures this rather than trusting it: it fails the run if any
+page scrolls horizontally at 390px or if any button or link renders under 40px
+tall. That check is what caught a 480px overflow on the index — a grid item
+defaults to `min-width: auto`, so the luck timeline's own horizontal scroller
+was widening the whole column instead of scrolling inside it.
 
 ---
 

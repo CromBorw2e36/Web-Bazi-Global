@@ -1,3 +1,16 @@
+# LOCAL DEVELOPMENT ONLY — not the production stack.
+#
+# Production lives in deploy/: the app joins the shared BuilderCMS compose stack
+# behind its nginx and certbot, because bazi.sincely.io.vn is a subdomain of a
+# site that stack already serves. See deploy/README.md.
+#
+# This file exists so `npm run dev` has a database. Port 5433, not 5432, to stay
+# clear of anything already listening locally.
+#
+#   docker compose up -d      # start
+#   docker compose down       # stop, keeping data
+#   docker compose down -v    # stop and delete the volume
+
 services:
   postgres:
     image: postgres:17-alpine

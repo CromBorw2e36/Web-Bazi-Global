@@ -47,13 +47,13 @@ export function DayNav({
   }).format(new Date(`${date}T00:00:00Z`))
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
       {profiles.length > 1 ? (
         <select
           value={activeProfileId}
           onChange={(e) => go(e.target.value, date)}
           aria-label={vi ? 'Chọn hồ sơ' : 'Select profile'}
-          className="cursor-pointer rounded-seal border border-rule bg-paper px-3 py-2 text-sm text-ink transition-colors duration-200 hover:border-rule-strong focus:border-cinnabar focus:outline-none"
+          className="w-full cursor-pointer rounded-seal border border-rule bg-paper px-3 py-2.5 text-sm text-ink transition-colors duration-200 hover:border-rule-strong focus:border-cinnabar focus:outline-none sm:w-auto sm:py-2"
         >
           {profiles.map((p) => (
             <option key={p.id} value={p.id}>
@@ -65,19 +65,19 @@ export function DayNav({
         <div className="text-sm font-medium text-ink">{profiles[0]?.name}</div>
       )}
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center justify-between gap-1 sm:justify-end">
         <button
           type="button"
           onClick={() => go(activeProfileId, shiftDate(date, -1))}
           aria-label={vi ? 'Ngày trước' : 'Previous day'}
-          className="flex size-8 cursor-pointer items-center justify-center rounded-seal border border-rule text-ink-soft transition-colors duration-200 hover:border-rule-strong hover:text-ink"
+          className="flex size-11 cursor-pointer items-center justify-center rounded-seal border border-rule text-ink-soft transition-colors duration-200 hover:border-rule-strong hover:text-ink sm:size-9"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-4" aria-hidden>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 18l-6-6 6-6" />
           </svg>
         </button>
 
-        <div className="min-w-[190px] px-2 text-center">
+        <div className="min-w-0 flex-1 px-2 text-center sm:min-w-[190px] sm:flex-none">
           <div className="text-sm font-medium text-ink">{formatted}</div>
           {date !== today && (
             <button
@@ -94,7 +94,7 @@ export function DayNav({
           type="button"
           onClick={() => go(activeProfileId, shiftDate(date, 1))}
           aria-label={vi ? 'Ngày sau' : 'Next day'}
-          className="flex size-8 cursor-pointer items-center justify-center rounded-seal border border-rule text-ink-soft transition-colors duration-200 hover:border-rule-strong hover:text-ink"
+          className="flex size-11 cursor-pointer items-center justify-center rounded-seal border border-rule text-ink-soft transition-colors duration-200 hover:border-rule-strong hover:text-ink sm:size-9"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-4" aria-hidden>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6" />

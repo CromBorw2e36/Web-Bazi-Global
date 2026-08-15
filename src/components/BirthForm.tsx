@@ -134,7 +134,7 @@ export function BirthForm({
           <button
             type="button"
             onClick={() => setManualPlace((v) => !v)}
-            className="cursor-pointer text-[11px] text-cinnabar underline-offset-2 hover:underline"
+            className="-my-3 cursor-pointer py-3 text-[11px] text-cinnabar underline-offset-2 hover:underline"
           >
             {manualPlace
               ? locale === 'vi'

@@ -106,5 +106,50 @@ const good = await anonPage.request.get(`${BASE}/api/cron/daily-digest`, {
 if (good.status() !== 200) fail(`cron with secret returned ${good.status()}`)
 console.log(`    cron: no secret ${bad.status()}, with secret ${good.status()} ${JSON.stringify(await good.json())}`)
 
+// 8. Mobile layout — measured, not assumed
+step('mobile layout')
+const phone = await browser.newContext({
+  viewport: { width: 390, height: 844 },
+  deviceScaleFactor: 2,
+  isMobile: true,
+  hasTouch: true,
+})
+const mp = await phone.newPage()
+
+// Sign in as the account this run created, so the signed-in pages render.
+await mp.goto(`${BASE}/login`, { waitUntil: 'networkidle' })
+await mp.fill('#email', EMAIL)
+await mp.fill('#password', 'test-password-123')
+// The login page carries no nav, so this submit button is unambiguous.
+await Promise.all([mp.waitForURL(/\/today/, { timeout: 30000 }), mp.click('button[type=submit]')])
+
+for (const path of ['/today', '/profiles', '/journal', '/settings', '/']) {
+  await mp.goto(`${BASE}${path}`, { waitUntil: 'networkidle' })
+  await mp.waitForTimeout(900)
+
+  // A page that scrolls sideways on a phone is broken, full stop.
+  const overflow = await mp.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  )
+  if (overflow > 0) fail(`${path} scrolls horizontally by ${overflow}px at 390px`)
+
+  // Anything tappable needs a real target. 40px is the floor; 44 is the aim.
+  const small = await mp.evaluate(() => {
+    const out = []
+    for (const el of document.querySelectorAll('button, a[href]')) {
+      const r = el.getBoundingClientRect()
+      if (!r.width || !r.height) continue
+      if (r.height < 40) out.push(`${(el.textContent || el.getAttribute('aria-label') || '?').trim().slice(0, 20)} h=${Math.round(r.height)}`)
+    }
+    return out
+  })
+  if (small.length) fail(`${path} has targets under 40px: ${small.join(', ')}`)
+}
+
+// The bottom tab row is the phone's primary navigation — it must be there.
+const tabs = await mp.locator('nav.fixed a').count()
+if (tabs !== 4) fail(`expected 4 bottom tabs on mobile, found ${tabs}`)
+console.log(`    5 pages at 390px: no overflow, no target under 40px, ${tabs} tabs`)
+
 await browser.close()
 if (!process.exitCode) console.log('\n  ✓ end-to-end flow passed')

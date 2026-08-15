@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/db'
-import { AppNav } from '@/components/AppNav'
+import { AppNav, NAV_CLEARANCE } from '@/components/AppNav'
 import { ProfileEditor } from '@/components/ProfileEditor'
 import { Panel } from '@/components/ui'
 
@@ -18,7 +18,7 @@ export default async function EditProfilePage({ params }: { params: Promise<{ id
   return (
     <>
       <AppNav active="/profiles" />
-      <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
+      <main className={`mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8 ${NAV_CLEARANCE}`}>
         <h1 className="mb-5 font-[family-name:var(--font-display)] text-2xl font-bold text-ink">Sửa lá số</h1>
         <Panel>
           <ProfileEditor

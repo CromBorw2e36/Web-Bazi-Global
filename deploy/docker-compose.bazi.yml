@@ -1,0 +1,114 @@
+# Bát Tự — bazi.sincely.io.vn
+#
+# These services belong in the shared BuilderCMS stack, not in a stack of their
+# own: nginx and certbot there already terminate TLS for sincely.io.vn, and
+# bazi.sincely.io.vn is a subdomain of it. Running a second nginx would mean two
+# processes fighting over ports 80 and 443.
+#
+# Merge the two blocks below into k:/Project/Sub/_1/BuilderCMS/docker-compose.yml
+# — the services into `services:`, the volume into `volumes:` — then add
+# `bazi` to the nginx service's `depends_on`. See deploy/README.md.
+#
+# Postgres is separate from the shared SQL Server on purpose. This app's schema
+# is Postgres-specific (Prisma migrations, @db.Date, enums), and keeping its
+# data in its own volume means a restore here never touches BuilderCMS.
+
+services:
+  # ================================================================
+  #  BÁT TỰ (bazi.sincely.io.vn)
+  # ================================================================
+  bazi-db:
+    image: postgres:17-alpine
+    container_name: bazi-db
+    environment:
+      POSTGRES_USER: bazi
+      POSTGRES_PASSWORD: ${BAZI_DB_PASSWORD:?set BAZI_DB_PASSWORD}
+      POSTGRES_DB: bazi
+    volumes:
+      - bazi-pgdata:/var/lib/postgresql/data
+    # No ports: — the database is reachable only from the compose network.
+    # Publishing 5432 would expose it to the whole internet.
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U bazi -d bazi']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # Runs to completion, then exits. The app waits on it, so a deploy can never
+  # start a server against a schema it does not match.
+  bazi-migrate:
+    build:
+      context: ../Web-Bazi-Global
+      dockerfile: Dockerfile
+      target: migrator
+    image: bazi-migrate:latest
+    container_name: bazi-migrate
+    environment:
+      DATABASE_URL: postgresql://bazi:${BAZI_DB_PASSWORD:?set BAZI_DB_PASSWORD}@bazi-db:5432/bazi?schema=public
+    depends_on:
+      bazi-db:
+        condition: service_healthy
+    restart: 'no'
+
+  bazi:
+    build:
+      context: ../Web-Bazi-Global
+      dockerfile: Dockerfile
+      target: runner
+    image: bazi-web:latest
+    container_name: bazi
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://bazi:${BAZI_DB_PASSWORD:?set BAZI_DB_PASSWORD}@bazi-db:5432/bazi?schema=public
+
+      # Auth.js needs the canonical origin pinned in production — behind a proxy
+      # it cannot infer the public URL from the request alone.
+      AUTH_URL: https://bazi.sincely.io.vn
+      AUTH_SECRET: ${BAZI_AUTH_SECRET:?set BAZI_AUTH_SECRET}
+      AUTH_TRUST_HOST: 'true'
+
+      AUTH_GOOGLE_ID: ${BAZI_GOOGLE_ID:-}
+      AUTH_GOOGLE_SECRET: ${BAZI_GOOGLE_SECRET:-}
+
+      # Optional. Without it the app falls back to its deterministic renderer,
+      # so readings still work — they are just plainer.
+      ANTHROPIC_API_KEY: ${BAZI_ANTHROPIC_API_KEY:-}
+
+      CRON_SECRET: ${BAZI_CRON_SECRET:?set BAZI_CRON_SECRET}
+      RESEND_API_KEY: ${BAZI_RESEND_API_KEY:-}
+      EMAIL_FROM: ${BAZI_EMAIL_FROM:-Bát Tự <onboarding@resend.dev>}
+    depends_on:
+      bazi-db:
+        condition: service_healthy
+      bazi-migrate:
+        condition: service_completed_successfully
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  # Fires the daily digest once an hour. The endpoint decides who is due by
+  # comparing each user's chosen send-hour against their own time zone, so one
+  # hourly tick serves every zone, and writing the reading row makes a repeat
+  # call within the same hour a no-op rather than a second email.
+  bazi-cron:
+    image: alpine:3.20
+    container_name: bazi-cron
+    command: >
+      sh -c "apk add --no-cache curl >/dev/null &&
+             while :; do
+               sleep $$(( 3600 - $$(date +%s) % 3600 ));
+               curl -fsS -m 280 -H \"authorization: Bearer $$CRON_SECRET\" \
+                 http://bazi:3000/api/cron/daily-digest || echo 'digest call failed';
+             done"
+    environment:
+      CRON_SECRET: ${BAZI_CRON_SECRET:?set BAZI_CRON_SECRET}
+    depends_on:
+      - bazi
+    restart: unless-stopped
+
+volumes:
+  bazi-pgdata:

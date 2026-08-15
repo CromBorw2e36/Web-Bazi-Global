@@ -119,7 +119,7 @@ export function SettingsForm({
       <button
         type="submit"
         disabled={pending}
-        className="cursor-pointer rounded-seal bg-cinnabar px-4 py-2 text-sm font-semibold text-white transition-opacity duration-200 hover:opacity-90 disabled:opacity-60"
+        className="inline-flex min-h-11 cursor-pointer items-center rounded-seal bg-cinnabar px-4 py-2 text-sm font-semibold text-white transition-opacity duration-200 hover:opacity-90 disabled:opacity-60 sm:min-h-0"
       >
         {pending ? 'Đang lưu…' : 'Lưu cài đặt'}
       </button>

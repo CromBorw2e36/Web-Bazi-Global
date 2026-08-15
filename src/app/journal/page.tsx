@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/db'
-import { AppNav } from '@/components/AppNav'
+import { AppNav, NAV_CLEARANCE } from '@/components/AppNav'
 import { Panel, Han, ELEMENT_TEXT } from '@/components/ui'
 import { formatDateOnly } from '@/lib/validation'
 import { BRANCH_TERMS, STEM_TERMS, HEAVENLY_STEMS, dayPillarJz, stemOf, branchOf } from '@/lib/bazi'
@@ -54,10 +54,10 @@ export default async function JournalPage({
     return (
       <>
         <AppNav active="/journal" />
-        <main className="mx-auto max-w-2xl px-4 py-16 sm:px-6">
+        <main className={`mx-auto max-w-2xl px-4 py-16 sm:px-6 ${NAV_CLEARANCE}`}>
           <Panel className="text-center">
             <p className="text-sm text-ink-soft">Chưa có hồ sơ nào để ghi nhật ký.</p>
-            <Link href="/profiles/new" className="mt-4 inline-block text-sm text-cinnabar underline-offset-2 hover:underline">
+            <Link href="/profiles/new" className="mt-3 inline-flex min-h-11 items-center px-2 text-sm text-cinnabar underline-offset-2 hover:underline">
               Thêm lá số
             </Link>
           </Panel>
@@ -93,7 +93,7 @@ export default async function JournalPage({
   return (
     <>
       <AppNav active="/journal" />
-      <main className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
+      <main className={`mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8 ${NAV_CLEARANCE}`}>
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold text-ink">Nhật Ký</h1>
@@ -123,7 +123,7 @@ export default async function JournalPage({
               Ghi lại điều đã xảy ra ở trang Hôm Nay. Sau vài tuần, đối chiếu ngược lại là cách duy nhất để biết luận
               giải có bám đúng thực tế của bạn hay không.
             </p>
-            <Link href="/today" className="mt-4 inline-block text-sm text-cinnabar underline-offset-2 hover:underline">
+            <Link href="/today" className="mt-3 inline-flex min-h-11 items-center px-2 text-sm text-cinnabar underline-offset-2 hover:underline">
               Tới trang Hôm Nay
             </Link>
           </Panel>
@@ -141,7 +141,7 @@ export default async function JournalPage({
                         {pillar.zh}
                       </Han>
                       <div>
-                        <Link href={`/today?profile=${active.id}&date=${iso}`} className="text-sm font-medium text-ink hover:text-cinnabar">
+                        <Link href={`/today?profile=${active.id}&date=${iso}`} className="-my-2 inline-flex min-h-11 items-center py-2 text-sm font-medium text-ink hover:text-cinnabar sm:min-h-0 sm:my-0 sm:py-0">
                           {new Intl.DateTimeFormat('vi-VN', {
                             weekday: 'long',
                             day: 'numeric',

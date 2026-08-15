@@ -84,13 +84,13 @@ export function ProfileList({ rows }: { rows: ProfileRow[] }) {
             <div className="flex shrink-0 flex-wrap gap-1.5">
               <Link
                 href={`/today?profile=${r.id}`}
-                className="cursor-pointer rounded-seal border border-rule px-2.5 py-1.5 text-xs text-ink-soft transition-colors duration-200 hover:border-rule-strong hover:text-ink"
+                className="inline-flex min-h-10 cursor-pointer items-center rounded-seal border border-rule px-3 py-1.5 text-xs text-ink-soft transition-colors duration-200 hover:border-rule-strong hover:text-ink sm:min-h-0"
               >
                 Xem hôm nay
               </Link>
               <Link
                 href={`/profiles/${r.id}`}
-                className="cursor-pointer rounded-seal border border-rule px-2.5 py-1.5 text-xs text-ink-soft transition-colors duration-200 hover:border-rule-strong hover:text-ink"
+                className="inline-flex min-h-10 cursor-pointer items-center rounded-seal border border-rule px-3 py-1.5 text-xs text-ink-soft transition-colors duration-200 hover:border-rule-strong hover:text-ink sm:min-h-0"
               >
                 Sửa
               </Link>
@@ -99,7 +99,7 @@ export function ProfileList({ rows }: { rows: ProfileRow[] }) {
                   type="button"
                   disabled={pending}
                   onClick={() => act(() => setDefaultProfile(r.id))}
-                  className="cursor-pointer rounded-seal border border-rule px-2.5 py-1.5 text-xs text-ink-soft transition-colors duration-200 hover:border-rule-strong hover:text-ink disabled:opacity-50"
+                  className="inline-flex min-h-10 cursor-pointer items-center rounded-seal border border-rule px-3 py-1.5 text-xs text-ink-soft transition-colors duration-200 hover:border-rule-strong hover:text-ink disabled:opacity-50 sm:min-h-0"
                 >
                   Đặt mặc định
                 </button>
@@ -108,7 +108,7 @@ export function ProfileList({ rows }: { rows: ProfileRow[] }) {
                 type="button"
                 disabled={pending}
                 onClick={() => (confirming === r.id ? act(() => deleteProfile(r.id)) : setConfirming(r.id))}
-                className={`cursor-pointer rounded-seal border px-2.5 py-1.5 text-xs transition-colors duration-200 disabled:opacity-50 ${
+                className={`inline-flex min-h-10 cursor-pointer items-center rounded-seal border px-3 py-1.5 text-xs transition-colors duration-200 disabled:opacity-50 sm:min-h-0 ${
                   confirming === r.id ? 'border-fire bg-fire/10 text-fire' : 'border-rule text-ink-faint hover:border-fire/50 hover:text-fire'
                 }`}
               >

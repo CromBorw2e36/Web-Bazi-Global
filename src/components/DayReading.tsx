@@ -217,7 +217,7 @@ export function DayReading({
                 disabled={pending}
                 onClick={() => onBookmark(kind)}
                 aria-pressed={on}
-                className={`inline-flex cursor-pointer items-center gap-1.5 rounded-seal border px-2.5 py-1.5 text-xs transition-colors duration-200 disabled:opacity-50 ${
+                className={`inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-seal border px-3 py-1.5 text-xs transition-colors duration-200 disabled:opacity-50 sm:min-h-0 ${
                   on ? `${tone} bg-paper-sunken` : 'border-rule text-ink-soft hover:border-rule-strong'
                 }`}
               >
@@ -255,7 +255,7 @@ export function DayReading({
                 onClick={() => setMood(mood === m ? null : m)}
                 aria-pressed={mood === m}
                 aria-label={`${vi ? 'Mức' : 'Level'} ${m}`}
-                className={`size-7 cursor-pointer rounded-seal border text-xs tabular-nums transition-colors duration-200 ${
+                className={`size-11 cursor-pointer rounded-seal border text-xs tabular-nums transition-colors duration-200 sm:size-8 ${
                   mood === m ? 'border-cinnabar bg-cinnabar/10 text-cinnabar' : 'border-rule text-ink-faint hover:border-rule-strong'
                 }`}
               >
@@ -270,7 +270,7 @@ export function DayReading({
               type="button"
               disabled={pending}
               onClick={onSaveJournal}
-              className="cursor-pointer rounded-seal bg-cinnabar px-3.5 py-1.5 text-xs font-semibold text-white transition-opacity duration-200 hover:opacity-90 disabled:opacity-60"
+              className="min-h-11 cursor-pointer rounded-seal bg-cinnabar px-4 py-1.5 text-xs font-semibold text-white transition-opacity duration-200 hover:opacity-90 disabled:opacity-60 sm:min-h-0"
             >
               {pending ? (vi ? 'Đang lưu…' : 'Saving…') : vi ? 'Lưu' : 'Save'}
             </button>

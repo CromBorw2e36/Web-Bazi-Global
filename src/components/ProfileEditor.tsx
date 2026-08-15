@@ -185,7 +185,7 @@ export function ProfileEditor({ initial }: { initial: ProfileValues }) {
           <button
             type="button"
             onClick={() => setManual((m) => !m)}
-            className="cursor-pointer text-[11px] text-cinnabar underline-offset-2 hover:underline"
+            className="-my-3 cursor-pointer py-3 text-[11px] text-cinnabar underline-offset-2 hover:underline"
           >
             {manual ? 'Chọn thành phố' : 'Nhập toạ độ'}
           </button>

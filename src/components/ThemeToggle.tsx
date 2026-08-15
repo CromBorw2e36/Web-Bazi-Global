@@ -42,7 +42,7 @@ export function ThemeToggle({ label = 'Đổi giao diện sáng / tối' }: { la
       type="button"
       onClick={toggle}
       aria-label={label}
-      className="flex size-8 cursor-pointer items-center justify-center rounded-seal border border-rule text-ink-soft transition-colors duration-200 hover:border-rule-strong hover:text-ink"
+      className="flex size-11 cursor-pointer sm:size-9 items-center justify-center rounded-seal border border-rule text-ink-soft transition-colors duration-200 hover:border-rule-strong hover:text-ink"
     >
       <span className="hidden dark:block">
         <SunIcon />

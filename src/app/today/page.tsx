@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/db'
-import { AppNav } from '@/components/AppNav'
+import { AppNav, NAV_CLEARANCE } from '@/components/AppNav'
 import { DayReading } from '@/components/DayReading'
 import { DayNav } from '@/components/DayNav'
 import { Panel } from '@/components/ui'
@@ -33,7 +33,7 @@ export default async function TodayPage({
     return (
       <>
         <AppNav active="/today" />
-        <main className="mx-auto max-w-2xl px-4 py-16 sm:px-6">
+        <main className={`mx-auto max-w-2xl px-4 py-16 sm:px-6 ${NAV_CLEARANCE}`}>
           <Panel className="text-center">
             <h1 className="font-[family-name:var(--font-display)] text-xl font-semibold text-ink">
               {vi ? 'Chưa có lá số nào' : 'No chart saved yet'}
@@ -64,7 +64,7 @@ export default async function TodayPage({
   return (
     <>
       <AppNav active="/today" />
-      <main className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
+      <main className={`mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8 ${NAV_CLEARANCE}`}>
         <DayNav
           profiles={profiles.map((p) => ({ id: p.id, name: p.name, relation: p.relation }))}
           activeProfileId={active.id}

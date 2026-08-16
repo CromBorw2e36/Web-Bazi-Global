@@ -44,11 +44,7 @@ export const authConfig = {
       const path = request.nextUrl.pathname
 
       if (PROTECTED.some((p) => path === p || path.startsWith(`${p}/`))) {
-        if (path === '/admin' || path.startsWith('/admin/')) {
-          if (signedIn && auth?.user?.email?.toLowerCase() !== process.env.ADMIN_EMAIL?.toLowerCase()) {
-            return Response.redirect(new URL('/', request.nextUrl))
-          }
-        }
+
         return signedIn
       }
 

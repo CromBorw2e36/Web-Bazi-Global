@@ -201,3 +201,38 @@ export function nearestPlace(longitude: number, latitude: number): Place {
   }
   return best
 }
+
+/**
+ * Folds Vietnamese text for searching: strips tone marks and vowel diacritics,
+ * and maps đ to d.
+ *
+ * NFD decomposition handles ă â ê ô ơ ư and every tone, but đ has no
+ * decomposition — it is its own letter, not d plus a mark — so it needs its own
+ * line. Without it, someone typing "da nang" finds Đà Nẵng but someone typing
+ * "dong nai" never finds Đồng Nai, which is the more common way people search.
+ */
+export const fold = (s: string) =>
+  s
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLowerCase()
+    .trim()
+
+/** Places matching a query, accent-insensitive, listed places first by prefix. */
+export function searchPlaces(query: string): Place[] {
+  const q = fold(query)
+  if (!q) return PLACES
+
+  const scored: { p: Place; rank: number }[] = []
+  for (const p of PLACES) {
+    const vi = fold(p.vi)
+    const en = fold(p.en)
+    // A name that starts with what was typed outranks one that merely contains
+    // it, so "ha" puts Hà Nội above Thanh Hoá.
+    if (vi.startsWith(q) || en.startsWith(q)) scored.push({ p, rank: 0 })
+    else if (vi.includes(q) || en.includes(q)) scored.push({ p, rank: 1 })
+  }
+  return scored.sort((a, b) => a.rank - b.rank).map((s) => s.p)
+}

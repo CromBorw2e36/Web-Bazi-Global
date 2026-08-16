@@ -32,6 +32,32 @@ if (!(await page.locator('a[href="/login"]').count())) fail('index has no way to
 await page.waitForTimeout(800)
 if (!(await page.locator('a[href="/register"]').count())) fail('index offers no way to save the chart')
 
+// 0b. Birth place: search without diacritics, and the map dialog on top
+step('place field')
+await page.click('#birth-input')
+await page.fill('#birth-input', 'dong nai')
+await page.waitForTimeout(400)
+const hits = await page.locator('#birth-list [role=option]').allInnerTexts()
+if (!hits.some((t) => /Đồng Nai/.test(t))) fail(`accent-free search missed: ${hits.slice(0, 3).join(', ')}`)
+await page.locator('#birth-list [role=option]').first().click()
+await page.waitForTimeout(400)
+if (!/Đồng Nai/.test(await page.locator('#birth-input').inputValue())) fail('picking from the list did not stick')
+
+await page.click('button:has-text("Chọn trên bản đồ")')
+await page.waitForTimeout(3000)
+// The dialog must escape the sticky panel it is declared in, or the chart cards
+// paint straight over it.
+const onBody = await page.evaluate(
+  () => document.querySelector('[role=dialog]')?.parentElement === document.body,
+)
+if (!onBody) fail('map dialog is not portalled to body — it will be clipped')
+const covers = await page.evaluate(() =>
+  Boolean(document.elementFromPoint(innerWidth / 2, innerHeight / 2)?.closest('[role=dialog]')),
+)
+if (!covers) fail('something paints over the map dialog')
+await page.click('button:has-text("Huỷ")')
+await page.waitForTimeout(300)
+
 // 1. Register
 step('register')
 await page.goto(`${BASE}/register`, { waitUntil: 'networkidle' })

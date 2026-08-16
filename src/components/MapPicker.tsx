@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { Map as LeafletMap, Marker } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { nearestPlace } from '@/lib/places'
@@ -104,7 +105,15 @@ export function MapPicker({
       label: vi ? `Toạ độ ${point.longitude.toFixed(2)}°` : `${point.longitude.toFixed(2)}° coordinate`,
     })
 
-  return (
+  /*
+    Rendered into document.body rather than in place. The form sits inside a
+    `sticky` panel, and a positioned or filtered ancestor makes `position: fixed`
+    resolve against that ancestor instead of the viewport — the dialog then gets
+    trapped in the left column and the chart cards paint straight over it. A
+    portal removes it from that ancestor chain entirely, which is the only fix
+    that does not depend on out-guessing every ancestor's stacking context.
+  */
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-0 sm:items-center sm:p-4"
       role="dialog"
@@ -197,6 +206,7 @@ export function MapPicker({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { castChart, OutOfRangeError, UI, pick, type BaziChart, type Locale } from '@/lib/bazi'
+import { castChart, OutOfRangeError, UI, pick, type BaziChart, type Gender, type Locale } from '@/lib/bazi'
 import { BirthForm, DEFAULT_VALUES, toBirthInput, type FormValues } from './BirthForm'
 import { PillarGrid } from './PillarGrid'
 import { StrengthPanel } from './StrengthPanel'
@@ -10,9 +10,50 @@ import { RelationList } from './RelationList'
 import { LuckTimeline } from './LuckTimeline'
 import { Han, Panel } from './ui'
 
-export function BaziApp({ currentYear, signedIn }: { currentYear: number; signedIn: boolean }) {
+export interface SavedProfile {
+  id: string
+  name: string
+  relation: string
+  isDefault: boolean
+  birthYear: number
+  birthMonth: number
+  birthDay: number
+  birthHour: number
+  birthMinute: number
+  gender: Gender
+  longitude: number
+  latitude: number
+  utcOffset: number
+  placeId: string | null
+  placeName: string
+  useEquationOfTime: boolean
+}
+
+const RELATION_LABEL: Record<string, { vi: string; en: string }> = {
+  SELF: { vi: 'Bản thân', en: 'Self' },
+  FAMILY: { vi: 'Gia đình', en: 'Family' },
+  FRIEND: { vi: 'Bạn bè', en: 'Friend' },
+  OTHER: { vi: 'Khác', en: 'Other' },
+}
+
+function profileToFormValues(p: SavedProfile): FormValues {
+  return {
+    date: `${String(p.birthYear).padStart(4, '0')}-${String(p.birthMonth).padStart(2, '0')}-${String(p.birthDay).padStart(2, '0')}`,
+    time: `${String(p.birthHour).padStart(2, '0')}:${String(p.birthMinute).padStart(2, '0')}`,
+    gender: p.gender,
+    placeId: p.placeId,
+    placeName: p.placeName,
+    longitude: p.longitude,
+    latitude: p.latitude,
+    utcOffset: p.utcOffset,
+    useEquationOfTime: p.useEquationOfTime,
+  }
+}
+
+export function BaziApp({ currentYear, signedIn, profiles = [] }: { currentYear: number; signedIn: boolean; profiles?: SavedProfile[] }) {
   const [locale, setLocale] = useState<Locale>('vi')
   const [values, setValues] = useState<FormValues>(DEFAULT_VALUES)
+  const [activeProfileId, setActiveProfileId] = useState<string | ''>('')
 
   const { chart, error } = useMemo<{ chart: BaziChart | null; error?: string }>(() => {
     const input = toBirthInput(values)
@@ -83,9 +124,42 @@ export function BaziApp({ currentYear, signedIn }: { currentYear: number; signed
       <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)] lg:items-start">
         {/* Input */}
         <Panel className="lg:sticky lg:top-6">
-          {/* No heading here — the page title above already says what this is,
-              and repeating it would just push the first field further down. */}
-          <BirthForm values={values} onChange={setValues} locale={locale} error={error} />
+          {/* Profile selector — only shown when the user has saved profiles. */}
+          {profiles.length > 0 && (
+            <div className="mb-4 border-b border-rule pb-4">
+              <label
+                className="mb-1.5 block text-[11px] font-semibold tracking-wide text-ink-faint uppercase"
+                htmlFor="profile-select"
+              >
+                {locale === 'vi' ? 'Chọn hồ sơ' : 'Load profile'}
+              </label>
+              <select
+                id="profile-select"
+                value={activeProfileId}
+                onChange={(e) => {
+                  const id = e.target.value
+                  setActiveProfileId(id)
+                  if (id) {
+                    const p = profiles.find((p) => p.id === id)
+                    if (p) setValues(profileToFormValues(p))
+                  }
+                }}
+                className="w-full cursor-pointer rounded-seal border border-rule bg-paper px-3 py-2.5 text-sm text-ink transition-colors duration-200 hover:border-rule-strong focus:border-cinnabar focus:outline-none"
+              >
+                <option value="">
+                  {locale === 'vi' ? '— Nhập tay —' : '— Manual input —'}
+                </option>
+                {profiles.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} · {locale === 'vi' ? RELATION_LABEL[p.relation]?.vi : RELATION_LABEL[p.relation]?.en}
+                    {p.isDefault ? (locale === 'vi' ? ' ★' : ' ★') : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <BirthForm values={values} onChange={(v) => { setActiveProfileId(''); setValues(v) }} locale={locale} error={error} />
 
           {/* What the solar correction actually did to this birth time. */}
           {correction && (

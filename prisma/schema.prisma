@@ -110,6 +110,9 @@ model Profile {
 
   /// Degrees east of Greenwich; negative for west.
   longitude Float
+  /// Carried for the map only — latitude has no effect on a chart. Stored so a
+  /// map-picked point reopens where the user left it.
+  latitude  Float @default(21.03)
   /// Standard UTC offset in hours at the birth place at the time of birth.
   utcOffset Float
   placeId   String?

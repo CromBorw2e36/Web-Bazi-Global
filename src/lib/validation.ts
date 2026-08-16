@@ -28,6 +28,7 @@ export const profileSchema = z.object({
   birthMinute: z.coerce.number().int().min(0).max(59),
   gender: z.enum(['MALE', 'FEMALE']),
   longitude: z.coerce.number().min(-180).max(180),
+  latitude: z.coerce.number().min(-90).max(90),
   utcOffset: z.coerce.number().min(-12).max(14),
   placeId: z.string().max(60).optional().nullable(),
   placeName: z.string().trim().min(1).max(120),

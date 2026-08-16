@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Profile" ADD COLUMN     "latitude" DOUBLE PRECISION NOT NULL DEFAULT 21.03;

@@ -1,9 +1,8 @@
 'use client'
 
-import { useState } from 'react'
 import { FIRST_YEAR, LAST_YEAR, UI, pick, type BirthInput, type Gender, type Locale } from '@/lib/bazi'
-import { PLACES, findPlace } from '@/lib/places'
 import { Han } from './ui'
+import { PlaceField } from './PlaceField'
 
 const FIELD =
   'w-full rounded-seal border border-rule bg-paper px-3 py-2 text-sm text-ink transition-colors duration-200 hover:border-rule-strong focus:border-cinnabar focus:outline-none'
@@ -14,8 +13,11 @@ export interface FormValues {
   date: string
   time: string
   gender: Gender
-  placeId: string
+  /** null when the point came from the map rather than the list. */
+  placeId: string | null
+  placeName: string
   longitude: number
+  latitude: number
   utcOffset: number
   useEquationOfTime: boolean
 }
@@ -24,8 +26,10 @@ export const DEFAULT_VALUES: FormValues = {
   date: '1990-06-15',
   time: '08:30',
   gender: 'MALE',
-  placeId: 'hanoi',
+  placeId: 'ha-noi',
+  placeName: 'Hà Nội',
   longitude: 105.85,
+  latitude: 21.03,
   utcOffset: 7,
   useEquationOfTime: true,
 }
@@ -59,14 +63,7 @@ export function BirthForm({
   locale: Locale
   error?: string
 }) {
-  const [manualPlace, setManualPlace] = useState(false)
   const set = <K extends keyof FormValues>(key: K, value: FormValues[K]) => onChange({ ...values, [key]: value })
-
-  const selectPlace = (id: string) => {
-    const place = findPlace(id)
-    if (!place) return
-    onChange({ ...values, placeId: id, longitude: place.longitude, utcOffset: place.utcOffset })
-  }
 
   return (
     <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
@@ -126,75 +123,18 @@ export function BirthForm({
         </div>
       </fieldset>
 
-      <div>
-        <div className="mb-1.5 flex items-baseline justify-between">
-          <label className={`${LABEL} mb-0`} htmlFor="birth-place">
-            {pick(UI.place, locale)}
-          </label>
-          <button
-            type="button"
-            onClick={() => setManualPlace((v) => !v)}
-            className="-my-3 cursor-pointer py-3 text-[11px] text-cinnabar underline-offset-2 hover:underline"
-          >
-            {manualPlace
-              ? locale === 'vi'
-                ? 'Chọn thành phố'
-                : 'Pick a city'
-              : locale === 'vi'
-                ? 'Nhập toạ độ'
-                : 'Enter coordinates'}
-          </button>
-        </div>
-
-        {manualPlace ? (
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1 block text-[10px] text-ink-faint" htmlFor="longitude">
-                {pick(UI.longitude, locale)} (°E)
-              </label>
-              <input
-                id="longitude"
-                type="number"
-                step="0.01"
-                min={-180}
-                max={180}
-                className={FIELD}
-                value={values.longitude}
-                onChange={(e) => set('longitude', Number(e.target.value))}
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-[10px] text-ink-faint" htmlFor="utc-offset">
-                {pick(UI.timezone, locale)} (UTC)
-              </label>
-              <input
-                id="utc-offset"
-                type="number"
-                step="0.5"
-                min={-12}
-                max={14}
-                className={FIELD}
-                value={values.utcOffset}
-                onChange={(e) => set('utcOffset', Number(e.target.value))}
-              />
-            </div>
-          </div>
-        ) : (
-          <select
-            id="birth-place"
-            className={`${FIELD} cursor-pointer`}
-            value={values.placeId}
-            onChange={(e) => selectPlace(e.target.value)}
-          >
-            {PLACES.map((p) => (
-              <option key={p.id} value={p.id}>
-                {locale === 'vi' ? p.vi : p.en} · {p.longitude > 0 ? `${p.longitude}°E` : `${-p.longitude}°W`} · UTC
-                {p.utcOffset >= 0 ? `+${p.utcOffset}` : p.utcOffset}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
+      <PlaceField
+        value={{
+          placeId: values.placeId,
+          placeName: values.placeName,
+          longitude: values.longitude,
+          latitude: values.latitude,
+          utcOffset: values.utcOffset,
+        }}
+        onChange={(v) => onChange({ ...values, ...v })}
+        locale={locale}
+        idPrefix="birth"
+      />
 
       <label className="flex cursor-pointer items-start gap-2.5 pt-1">
         <input

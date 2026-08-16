@@ -80,22 +80,39 @@ docker compose config --services | grep bazi     # 4 lines
 
 ## 4. Certificate, then nginx config
 
-The config references a certificate that does not exist yet, so nginx will not
-start if you add it first. Issue the certificate, then drop the file in:
+Order matters here, and both halves of it bite. The config names a certificate
+that does not exist yet, and it proxies to `bazi`, which nginx resolves while
+loading the config — so copying the file in before the certificate exists and
+the container runs leaves an nginx that fails `-t` and, on its next restart,
+refuses to start at all, taking every other site on the box with it.
 
 ```bash
 cd BuilderCMS
 
-# Bring the app up first — the ACME challenge is served by the running nginx,
-# which needs the bazi service resolvable for its own depends_on.
+# Bring the app up first, so the `bazi` upstream resolves.
 docker compose build --no-cache bazi-db bazi-migrate bazi bazi-cron && docker compose up -d bazi-db bazi-migrate bazi bazi-cron
 
-docker compose run --rm certbot certonly --webroot -w /var/www/certbot \
-  -d bazi.sincely.io.vn
+# --entrypoint is not optional: the certbot service's entrypoint is a
+# `while :; do certbot renew; sleep 12h; done` loop that ignores arguments, so
+# without it this issues nothing and just prints the renewal list for every
+# other domain.
+docker compose run --rm --entrypoint certbot certbot \
+  certonly --webroot -w /var/www/certbot -d bazi.sincely.io.vn --non-interactive
+
+ls nginx/certbot/conf/live/bazi.sincely.io.vn/   # fullchain.pem, privkey.pem
 
 cp ../Web-Bazi-Global/deploy/nginx/bazi.conf nginx/conf.d/bazi.conf
 docker compose exec nginx nginx -t && docker compose exec nginx nginx -s reload
 ```
+
+The ACME challenge is served without `bazi.conf` in place: `2ksoft.conf` sorts
+first in `conf.d`, making its `listen 80` block the default server for port 80,
+and it already maps `/.well-known/acme-challenge/` to the shared webroot.
+
+If `nginx -t` reports `host not found in upstream "bazi"`, the container is not
+running — `docker compose ps bazi`. Move `bazi.conf` back out of `conf.d` while
+you sort it out; a reload that fails leaves the old config serving, but a
+restart in that state does not.
 
 The existing certbot container renews it on the same 12-hour loop as every other
 certificate — nothing further to schedule.

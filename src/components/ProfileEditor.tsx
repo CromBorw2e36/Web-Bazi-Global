@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { FIRST_YEAR, LAST_YEAR } from '@/lib/bazi'
-import { PLACES, findPlace } from '@/lib/places'
+import { PlaceField } from './PlaceField'
 import { createProfile, updateProfile } from '@/app/actions/profiles'
 
 const FIELD =
@@ -24,6 +24,7 @@ export interface ProfileValues {
   utcOffset: number
   placeId: string | null
   placeName: string
+  latitude: number
   useEquationOfTime: boolean
 }
 
@@ -38,8 +39,9 @@ export const EMPTY_PROFILE: ProfileValues = {
   gender: 'MALE',
   longitude: 105.85,
   utcOffset: 7,
-  placeId: 'hanoi',
+  placeId: 'ha-noi',
   placeName: 'Hà Nội',
+  latitude: 21.03,
   useEquationOfTime: true,
 }
 
@@ -49,15 +51,8 @@ export function ProfileEditor({ initial }: { initial: ProfileValues }) {
   const [error, setError] = useState<string>()
   const [fields, setFields] = useState<Record<string, string>>({})
   const [pending, start] = useTransition()
-  const [manual, setManual] = useState(!v.placeId)
 
   const set = <K extends keyof ProfileValues>(k: K, value: ProfileValues[K]) => setV({ ...v, [k]: value })
-
-  const selectPlace = (id: string) => {
-    const place = findPlace(id)
-    if (!place) return
-    setV({ ...v, placeId: id, placeName: place.vi, longitude: place.longitude, utcOffset: place.utcOffset })
-  }
 
   const date = `${v.birthYear}-${String(v.birthMonth).padStart(2, '0')}-${String(v.birthDay).padStart(2, '0')}`
   const time = `${String(v.birthHour).padStart(2, '0')}:${String(v.birthMinute).padStart(2, '0')}`
@@ -179,66 +174,18 @@ export function ProfileEditor({ initial }: { initial: ProfileValues }) {
         </div>
       </fieldset>
 
-      <div>
-        <div className="mb-1.5 flex items-baseline justify-between">
-          <span className={`${LABEL} mb-0`}>Nơi sinh</span>
-          <button
-            type="button"
-            onClick={() => setManual((m) => !m)}
-            className="-my-3 cursor-pointer py-3 text-[11px] text-cinnabar underline-offset-2 hover:underline"
-          >
-            {manual ? 'Chọn thành phố' : 'Nhập toạ độ'}
-          </button>
-        </div>
-
-        {manual ? (
-          <div className="grid gap-3 sm:grid-cols-3">
-            <input
-              className={FIELD}
-              value={v.placeName}
-              maxLength={120}
-              onChange={(e) => setV({ ...v, placeName: e.target.value, placeId: null })}
-              placeholder="Tên nơi sinh"
-              aria-label="Tên nơi sinh"
-            />
-            <input
-              className={FIELD}
-              type="number"
-              step="0.01"
-              min={-180}
-              max={180}
-              value={v.longitude}
-              onChange={(e) => set('longitude', Number(e.target.value))}
-              aria-label="Kinh độ"
-              placeholder="Kinh độ °E"
-            />
-            <input
-              className={FIELD}
-              type="number"
-              step="0.5"
-              min={-12}
-              max={14}
-              value={v.utcOffset}
-              onChange={(e) => set('utcOffset', Number(e.target.value))}
-              aria-label="Múi giờ UTC"
-              placeholder="UTC"
-            />
-          </div>
-        ) : (
-          <select className={`${FIELD} cursor-pointer`} value={v.placeId ?? ''} onChange={(e) => selectPlace(e.target.value)}>
-            {PLACES.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.vi} · {p.longitude > 0 ? `${p.longitude}°E` : `${-p.longitude}°W`} · UTC
-                {p.utcOffset >= 0 ? `+${p.utcOffset}` : p.utcOffset}
-              </option>
-            ))}
-          </select>
-        )}
-        <p className="mt-1.5 text-[11px] leading-relaxed text-ink-faint">
-          Kinh độ quyết định giờ mặt trời thật, nên ảnh hưởng trực tiếp tới trụ giờ. Múi giờ là múi giờ hành chính lúc
-          sinh — người sinh thời chiến hoặc trước cải cách giờ cần nhập tay.
-        </p>
-      </div>
+      <PlaceField
+        value={{
+          placeId: v.placeId,
+          placeName: v.placeName,
+          longitude: v.longitude,
+          latitude: v.latitude,
+          utcOffset: v.utcOffset,
+        }}
+        onChange={(next) => setV({ ...v, ...next })}
+        locale="vi"
+        idPrefix="p"
+      />
 
       <label className="flex cursor-pointer items-start gap-2.5">
         <input

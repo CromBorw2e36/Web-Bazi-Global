@@ -33,6 +33,7 @@ export default async function EditProfilePage({ params }: { params: Promise<{ id
               birthMinute: profile.birthMinute,
               gender: profile.gender,
               longitude: profile.longitude,
+              latitude: profile.latitude,
               utcOffset: profile.utcOffset,
               placeId: profile.placeId,
               placeName: profile.placeName,

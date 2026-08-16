@@ -5,6 +5,10 @@ import { useRouter } from 'next/navigation'
 import { FIRST_YEAR, LAST_YEAR } from '@/lib/bazi'
 import { PlaceField } from './PlaceField'
 import { createProfile, updateProfile } from '@/app/actions/profiles'
+import dynamic from 'next/dynamic'
+import type { CccdData } from '@/lib/cccd'
+
+const CccdScanner = dynamic(() => import('./CccdScanner').then((m) => m.CccdScanner), { ssr: false })
 
 const FIELD =
   'w-full rounded-seal border border-rule bg-paper px-3 py-2 text-sm text-ink transition-colors duration-200 hover:border-rule-strong focus:border-cinnabar focus:outline-none'
@@ -51,6 +55,7 @@ export function ProfileEditor({ initial }: { initial: ProfileValues }) {
   const [error, setError] = useState<string>()
   const [fields, setFields] = useState<Record<string, string>>({})
   const [pending, start] = useTransition()
+  const [showScanner, setShowScanner] = useState(false)
 
   const set = <K extends keyof ProfileValues>(k: K, value: ProfileValues[K]) => setV({ ...v, [k]: value })
 
@@ -81,6 +86,20 @@ export function ProfileEditor({ initial }: { initial: ProfileValues }) {
         submit()
       }}
     >
+      <div className="mb-3 flex justify-end">
+        <button
+          type="button"
+          onClick={() => setShowScanner(true)}
+          className="flex cursor-pointer items-center gap-1.5 rounded-seal border border-cinnabar/30 px-3 py-1.5 text-xs font-medium text-cinnabar transition-colors hover:bg-cinnabar/5"
+        >
+          <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          Quét CCCD
+        </button>
+      </div>
+
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label className={LABEL} htmlFor="p-name">
@@ -220,6 +239,28 @@ export function ProfileEditor({ initial }: { initial: ProfileValues }) {
           Huỷ
         </button>
       </div>
+
+      <p className="mt-4 flex items-start gap-1.5 text-[11px] text-ink-faint">
+        <span aria-hidden className="mt-0.5">🔒</span>
+        <span>Thông tin sinh nhật và giới tính chỉ dùng để tính toán lá số Bát Tự. Chúng tôi không chia sẻ dữ liệu cá nhân cho bên thứ ba.</span>
+      </p>
+
+      {showScanner && (
+        <CccdScanner
+          onClose={() => setShowScanner(false)}
+          onScan={(data) => {
+            setV({
+              ...v,
+              name: data.name,
+              birthYear: data.birthYear,
+              birthMonth: data.birthMonth,
+              birthDay: data.birthDay,
+              gender: data.gender
+            })
+            setShowScanner(false)
+          }}
+        />
+      )}
     </form>
   )
 }

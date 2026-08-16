@@ -1,8 +1,13 @@
 'use client'
 
+import { useState } from 'react'
+import dynamic from 'next/dynamic'
 import { FIRST_YEAR, LAST_YEAR, UI, pick, type BirthInput, type Gender, type Locale } from '@/lib/bazi'
 import { Han } from './ui'
 import { PlaceField } from './PlaceField'
+import type { CccdData } from '@/lib/cccd'
+
+const CccdScanner = dynamic(() => import('./CccdScanner').then((m) => m.CccdScanner), { ssr: false })
 
 const FIELD =
   'w-full rounded-seal border border-rule bg-paper px-3 py-2 text-sm text-ink transition-colors duration-200 hover:border-rule-strong focus:border-cinnabar focus:outline-none'
@@ -63,10 +68,25 @@ export function BirthForm({
   locale: Locale
   error?: string
 }) {
+  const [showScanner, setShowScanner] = useState(false)
   const set = <K extends keyof FormValues>(key: K, value: FormValues[K]) => onChange({ ...values, [key]: value })
 
   return (
     <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+      <div className="mb-3 flex justify-end">
+        <button
+          type="button"
+          onClick={() => setShowScanner(true)}
+          className="flex cursor-pointer items-center gap-1.5 rounded-seal border border-cinnabar/30 px-3 py-1.5 text-xs font-medium text-cinnabar transition-colors hover:bg-cinnabar/5"
+        >
+          <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          {locale === 'vi' ? 'Quét CCCD' : 'Scan ID card'}
+        </button>
+      </div>
+
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className={LABEL} htmlFor="birth-date">
@@ -158,6 +178,17 @@ export function BirthForm({
           <span aria-hidden>⚠</span>
           <span>{error}</span>
         </p>
+      )}
+
+      {showScanner && (
+        <CccdScanner
+          onClose={() => setShowScanner(false)}
+          onScan={(data) => {
+            const dateStr = `${data.birthYear}-${String(data.birthMonth).padStart(2, '0')}-${String(data.birthDay).padStart(2, '0')}`
+            onChange({ ...values, date: dateStr, gender: data.gender })
+            setShowScanner(false)
+          }}
+        />
       )}
     </form>
   )

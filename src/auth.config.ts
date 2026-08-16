@@ -1,6 +1,17 @@
 import type { NextAuthConfig } from 'next-auth'
 import Google from 'next-auth/providers/google'
 
+declare module 'next-auth' {
+  interface Session {
+    user: {
+      id: string
+      isAdmin?: boolean
+    } & import('next-auth').DefaultSession['user']
+  }
+  interface User {
+    isAdmin?: boolean
+  }
+}
 /**
  * The half of the auth config that must run on the edge, in middleware.
  *
@@ -13,7 +24,7 @@ import Google from 'next-auth/providers/google'
 export const googleEnabled = Boolean(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET)
 
 /** Routes that require a signed-in user. */
-const PROTECTED = ['/today', '/profiles', '/journal', '/settings']
+const PROTECTED = ['/today', '/profiles', '/journal', '/settings', '/admin']
 
 export const authConfig = {
   pages: {
@@ -32,7 +43,14 @@ export const authConfig = {
       const signedIn = Boolean(auth?.user)
       const path = request.nextUrl.pathname
 
-      if (PROTECTED.some((p) => path === p || path.startsWith(`${p}/`))) return signedIn
+      if (PROTECTED.some((p) => path === p || path.startsWith(`${p}/`))) {
+        if (path === '/admin' || path.startsWith('/admin/')) {
+          if (signedIn && auth?.user?.email !== process.env.ADMIN_EMAIL) {
+            return Response.redirect(new URL('/', request.nextUrl))
+          }
+        }
+        return signedIn
+      }
 
       // Send an already-signed-in visitor away from the sign-in pages.
       if (signedIn && (path === '/login' || path === '/register')) {
@@ -43,12 +61,14 @@ export const authConfig = {
     jwt({ token, user }) {
       if (user) {
         token.id = user.id
+        token.isAdmin = user.email === process.env.ADMIN_EMAIL
       }
       return token
     },
     session({ session, token }) {
       if (token.id && session.user) {
         session.user.id = token.id as string
+        session.user.isAdmin = token.isAdmin as boolean
       }
       return session
     },

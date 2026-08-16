@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { parseCccdQr, type CccdData } from '@/lib/cccd'
 
 export interface CccdScannerProps {
@@ -16,7 +17,10 @@ export function CccdScanner({ onScan, onClose }: CccdScannerProps) {
   // Using ref to store scanner instance to avoid type issues with dynamic import
   const scannerRef = useRef<any>(null)
 
+  const [mounted, setMounted] = useState(false)
+
   useEffect(() => {
+    setMounted(true)
     let active = true
 
     async function initScanner() {
@@ -100,8 +104,10 @@ export function CccdScanner({ onScan, onClose }: CccdScannerProps) {
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+  if (!mounted) return null
+
+  const modalContent = (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
       <div 
         className="relative w-full max-w-[480px] rounded-seal border border-rule bg-paper p-4 shadow-xl"
         onClick={(e) => e.stopPropagation()}
@@ -156,4 +162,6 @@ export function CccdScanner({ onScan, onClose }: CccdScannerProps) {
       </div>
     </div>
   )
+
+  return createPortal(modalContent, document.body)
 }

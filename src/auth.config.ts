@@ -45,7 +45,7 @@ export const authConfig = {
 
       if (PROTECTED.some((p) => path === p || path.startsWith(`${p}/`))) {
         if (path === '/admin' || path.startsWith('/admin/')) {
-          if (signedIn && auth?.user?.email !== process.env.ADMIN_EMAIL) {
+          if (signedIn && auth?.user?.email?.toLowerCase() !== process.env.ADMIN_EMAIL?.toLowerCase()) {
             return Response.redirect(new URL('/', request.nextUrl))
           }
         }
@@ -61,7 +61,7 @@ export const authConfig = {
     jwt({ token, user }) {
       if (user) {
         token.id = user.id
-        token.isAdmin = user.email === process.env.ADMIN_EMAIL
+        token.isAdmin = user.email?.toLowerCase() === process.env.ADMIN_EMAIL?.toLowerCase()
       }
       return token
     },

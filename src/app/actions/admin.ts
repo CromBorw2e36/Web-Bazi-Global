@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db'
 
 async function requireAdmin() {
   const session = await auth()
-  if (!session?.user?.email || session.user.email !== process.env.ADMIN_EMAIL) {
+  if (!session?.user?.email || session.user.email.toLowerCase() !== process.env.ADMIN_EMAIL?.toLowerCase()) {
     throw new Error('FORBIDDEN')
   }
 }

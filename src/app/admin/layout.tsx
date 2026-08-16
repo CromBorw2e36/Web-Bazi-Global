@@ -6,7 +6,7 @@ import { Han } from '@/components/ui'
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
   
-  if (!session?.user?.email || session.user.email !== process.env.ADMIN_EMAIL) {
+  if (!session?.user?.email || session.user.email.toLowerCase() !== process.env.ADMIN_EMAIL?.toLowerCase()) {
     redirect('/')
   }
 

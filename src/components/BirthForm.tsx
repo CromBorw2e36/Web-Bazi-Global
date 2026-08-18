@@ -5,7 +5,6 @@ import dynamic from 'next/dynamic'
 import { FIRST_YEAR, LAST_YEAR, UI, pick, type BirthInput, type Gender, type Locale } from '@/lib/bazi'
 import { Han } from './ui'
 import { PlaceField } from './PlaceField'
-import type { CccdData } from '@/lib/cccd'
 
 const CccdScanner = dynamic(() => import('./CccdScanner').then((m) => m.CccdScanner), { ssr: false })
 
@@ -77,7 +76,7 @@ export function BirthForm({
         <button
           type="button"
           onClick={() => setShowScanner(true)}
-          className="flex cursor-pointer items-center gap-1.5 rounded-seal border border-cinnabar/30 px-3 py-1.5 text-xs font-medium text-cinnabar transition-colors hover:bg-cinnabar/5"
+          className="flex h-11 cursor-pointer items-center gap-1.5 rounded-seal border border-cinnabar/30 px-3 text-xs font-medium text-cinnabar transition-colors hover:bg-cinnabar/5 sm:h-9"
         >
           <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />

@@ -1,5 +1,6 @@
 import type { NextAuthConfig } from 'next-auth'
 import Google from 'next-auth/providers/google'
+import { isAdminEmail } from '@/lib/admin'
 
 declare module 'next-auth' {
   interface Session {
@@ -57,14 +58,20 @@ export const authConfig = {
     jwt({ token, user }) {
       if (user) {
         token.id = user.id
-        token.isAdmin = user.email?.toLowerCase() === process.env.ADMIN_EMAIL?.toLowerCase()
       }
       return token
     },
     session({ session, token }) {
       if (token.id && session.user) {
         session.user.id = token.id as string
-        session.user.isAdmin = token.isAdmin as boolean
+        /*
+          Derived here rather than stamped into the token at sign-in. A JWT
+          lives for thirty days, so a token-time answer would keep a promoted
+          account locked out — and a demoted one still admitted — until it
+          expired. The session is rebuilt per request, so the answer follows
+          ADMIN_EMAIL immediately.
+        */
+        session.user.isAdmin = isAdminEmail(session.user.email)
       }
       return session
     },

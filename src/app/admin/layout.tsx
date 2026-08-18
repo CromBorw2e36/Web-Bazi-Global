@@ -1,12 +1,20 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
+import { adminConfigured, isAdminEmail } from '@/lib/admin'
 import { Han } from '@/components/ui'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
-  
-  if (!session?.user?.email || session.user.email.toLowerCase() !== process.env.ADMIN_EMAIL?.toLowerCase()) {
+  const email = session?.user?.email
+
+  if (!adminConfigured()) {
+    // Nobody can reach the dashboard until this is set, and the browser sees
+    // only a redirect home — say so where an operator will actually read it.
+    console.warn('[admin] ADMIN_EMAIL is not set, so /admin is closed to everyone.')
+  }
+
+  if (!isAdminEmail(email)) {
     redirect('/')
   }
 
@@ -28,7 +36,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </Link>
           <div className="hidden h-5 w-px bg-rule sm:block" />
           <div className="hidden text-sm text-ink-soft sm:block">
-            {session.user.name || session.user.email}
+            {session?.user?.name || email}
           </div>
         </div>
       </header>

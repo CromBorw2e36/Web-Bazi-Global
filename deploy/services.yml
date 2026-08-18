@@ -86,6 +86,7 @@
       CRON_SECRET: ${BAZI_CRON_SECRET:?set BAZI_CRON_SECRET}
       RESEND_API_KEY: ${BAZI_RESEND_API_KEY:-}
       EMAIL_FROM: ${BAZI_EMAIL_FROM:-Bát Tự <onboarding@resend.dev>}
+      ADMIN_EMAIL: ${BAZI_ADMIN_EMAIL:-}
     depends_on:
       bazi-db:
         condition: service_healthy
@@ -127,3 +128,8 @@
 #   BAZI_CRON_SECRET=<openssl rand -hex 24>
 #   BAZI_ANTHROPIC_API_KEY=...   (không có cũng chạy, luận giải mộc hơn)
 #   BAZI_RESEND_API_KEY=...      (không có thì không gửi email)
+#   BAZI_ADMIN_EMAIL=you@example.com
+#                                # Email của tài khoản được vào /admin, nhiều
+#                                # người thì ngăn cách bằng dấu phẩy. Phải trùng
+#                                # email đã đăng ký trên site. Bỏ trống thì
+#                                # /admin đá về trang chủ với mọi tài khoản.

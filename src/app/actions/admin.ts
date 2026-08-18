@@ -1,10 +1,11 @@
 'use server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/db'
+import { isAdminEmail } from '@/lib/admin'
 
 async function requireAdmin() {
   const session = await auth()
-  if (!session?.user?.email || session.user.email.toLowerCase() !== process.env.ADMIN_EMAIL?.toLowerCase()) {
+  if (!isAdminEmail(session?.user?.email)) {
     throw new Error('FORBIDDEN')
   }
 }

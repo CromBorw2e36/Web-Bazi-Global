@@ -56,6 +56,7 @@ function GridPath() {
 export async function AppNav({ active }: { active?: string }) {
   const session = await auth()
   const signedIn = Boolean(session?.user)
+  const isAdmin = Boolean(session?.user?.isAdmin)
 
   return (
     <>
@@ -83,6 +84,19 @@ export async function AppNav({ active }: { active?: string }) {
                 <Han className="text-[10px] opacity-60">{l.zh}</Han>
               </Link>
             ))}
+            {/* Only the operator ever sees this; everyone else has no /admin to reach. */}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                aria-current={active === '/admin' ? 'page' : undefined}
+                className={`flex shrink-0 items-baseline gap-1.5 rounded-seal px-2.5 py-1.5 text-sm transition-colors duration-200 ${
+                  active === '/admin' ? 'bg-cinnabar/10 text-cinnabar' : 'text-ink-soft hover:text-ink'
+                }`}
+              >
+                Quản trị
+                <Han className="text-[10px] opacity-60">管理</Han>
+              </Link>
+            )}
           </nav>
 
           <div className="ml-auto flex shrink-0 items-center gap-2 sm:ml-0">

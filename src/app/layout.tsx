@@ -48,8 +48,9 @@ export const metadata: Metadata = {
 }
 
 /**
- * Applies the stored theme before first paint, so a returning dark-mode reader
- * never sees a flash of light paper.
+ * Applies the stored theme and reading mode before first paint, so a returning
+ * reader never sees a flash of light paper or a flash of the vocabulary they
+ * switched away from.
  *
  * Light is the default and the system preference is deliberately not consulted:
  * ink on paper is what this interface is, and dark mode is the deviation a
@@ -58,6 +59,7 @@ export const metadata: Metadata = {
 const THEME_INIT = `
 try {
   if (localStorage.getItem('bazi-theme') === 'dark') document.documentElement.classList.add('dark');
+  if (localStorage.getItem('bazi-plain') === '1') document.documentElement.classList.add('plain');
 } catch (e) {}
 `
 

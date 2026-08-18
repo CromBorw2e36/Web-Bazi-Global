@@ -24,5 +24,6 @@ export {
 } from './daily'
 export type { Band, DailySnapshot, TransitRelation } from './daily'
 export * from './i18n'
+export * from './plain'
 export type * from './types'
 export { HEAVENLY_STEMS, EARTHLY_BRANCHES, TEN_GODS, STRUCTURE } from './data/tables'

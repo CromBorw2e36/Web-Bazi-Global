@@ -3,6 +3,8 @@
 import { useMemo, useState } from 'react'
 import {
   BRANCH_TERMS,
+  CONCEPT_PLAIN,
+  PHASE_PLAIN,
   PHASE_TERMS,
   STEM_TERMS,
   TEN_GOD_SHORT,
@@ -13,6 +15,7 @@ import {
   type Locale,
 } from '@/lib/bazi'
 import { ELEMENT_TEXT, Han, Panel, SectionTitle } from './ui'
+import { Term } from './Term'
 import { HEAVENLY_STEMS, EARTHLY_BRANCHES } from '@/lib/bazi'
 
 const stemElement = (stem: number) => HEAVENLY_STEMS[stem - 1].element
@@ -42,7 +45,10 @@ export function LuckTimeline({
 
   return (
     <Panel>
-      <SectionTitle label={pick(UI.luck, locale)} mark={UI.luck.zh} />
+      <SectionTitle
+        label={<Term term={pick(UI.luck, locale)} plain={CONCEPT_PLAIN.luck} mark={UI.luck.zh} locale={locale} />}
+        mark={UI.luck.zh}
+      />
 
       <p className="mb-4 text-xs text-ink-faint">
         {locale === 'vi'
@@ -98,9 +104,13 @@ export function LuckTimeline({
       {/* Annual pillars inside the selected decade */}
       <div className="mt-5 border-t border-rule pt-4">
         <div className="mb-3 flex items-baseline gap-2">
-          <span className="font-[family-name:var(--font-display)] text-sm font-semibold text-ink">
-            {pick(UI.annual, locale)}
-          </span>
+          <Term
+            term={pick(UI.annual, locale)}
+            plain={CONCEPT_PLAIN.annual}
+            mark={UI.annual.zh}
+            locale={locale}
+            className="font-[family-name:var(--font-display)] text-left text-sm font-semibold text-ink"
+          />
           <Han className="text-[11px] text-ink-faint">{UI.annual.zh}</Han>
           <span className="text-[11px] text-ink-faint tabular-nums">
             {pillar.startYear}–{pillar.startYear + 9}
@@ -144,8 +154,18 @@ export function LuckTimeline({
 
         <p className="mt-3 text-[11px] text-ink-faint">
           {locale === 'vi'
-            ? `Trường sinh của nhật chủ tại vận này: ${pick(PHASE_TERMS[pillar.phase], locale)}. Lưu niên đổi trụ vào tiết Lập Xuân, không phải mùng 1 tháng Giêng dương lịch.`
-            : `Day master phase in this luck pillar: ${pick(PHASE_TERMS[pillar.phase], locale)}. Annual pillars turn at Li Chun in early February, not on 1 January.`}
+            ? 'Chặng đời của bản thân trong vận này: '
+            : 'Day master phase in this luck pillar: '}
+          <Term
+            term={pick(PHASE_TERMS[pillar.phase], locale)}
+            plain={PHASE_PLAIN[pillar.phase]}
+            mark={PHASE_TERMS[pillar.phase].zh}
+            locale={locale}
+            className="text-ink-soft"
+          />
+          {locale === 'vi'
+            ? '. Lưu niên đổi trụ vào tiết Lập Xuân, không phải mùng 1 tháng Giêng dương lịch.'
+            : '. Annual pillars turn at Li Chun in early February, not on 1 January.'}
         </p>
       </div>
     </Panel>

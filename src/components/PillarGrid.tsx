@@ -2,6 +2,11 @@
 
 import {
   ANIMAL_TERMS,
+  CONCEPT_PLAIN,
+  HIDDEN_ROLE_PLAIN,
+  PHASE_PLAIN,
+  PILLAR_PLAIN,
+  TEN_GOD_PLAIN,
   BRANCH_TERMS,
   ELEMENT_TERMS,
   HIDDEN_ROLE_TERMS,
@@ -18,6 +23,8 @@ import {
   type PillarSlot,
 } from '@/lib/bazi'
 import { ELEMENT_TEXT, Han, SectionTitle } from './ui'
+import { Term } from './Term'
+import { PlainToggleInline } from './PlainToggle'
 
 const SLOTS: PillarSlot[] = ['year', 'month', 'day', 'hour']
 
@@ -28,7 +35,13 @@ function HiddenStemRow({ hidden, locale }: { hidden: Pillar['hiddenStems'][numbe
         <Han className={`text-sm ${ELEMENT_TEXT[hidden.element]}`}>{STEM_TERMS[hidden.stem].zh}</Han>
         <span className="text-ink-soft">{pick(STEM_TERMS[hidden.stem], locale)}</span>
       </span>
-      <span className="text-ink-faint tabular-nums">{pick(TEN_GOD_TERMS[hidden.tenGod], locale)}</span>
+      <Term
+        term={pick(TEN_GOD_TERMS[hidden.tenGod], locale)}
+        plain={TEN_GOD_PLAIN[hidden.tenGod]}
+        mark={TEN_GOD_TERMS[hidden.tenGod].zh}
+        locale={locale}
+        className="text-right text-ink-faint"
+      />
     </div>
   )
 }
@@ -45,10 +58,16 @@ function PillarColumn({ pillar, locale }: { pillar: Pillar; locale: Locale }) {
       }`}
     >
       {/* Column header */}
-      <header className="flex items-center justify-between border-b border-rule px-3 py-2">
-        <span className="font-[family-name:var(--font-display)] text-xs font-semibold tracking-wide text-ink-soft">
-          {pick(PILLAR_TERMS[pillar.slot], locale)}
-        </span>
+      {/* min-h keeps the four headers on one baseline when a plain-language
+          label wraps to two lines in one column but not the others. */}
+      <header className="flex min-h-[2.75rem] items-center justify-between gap-1 border-b border-rule px-3 py-2">
+        <Term
+          term={pick(PILLAR_TERMS[pillar.slot], locale)}
+          plain={PILLAR_PLAIN[pillar.slot]}
+          mark={PILLAR_TERMS[pillar.slot].zh}
+          locale={locale}
+          className="font-[family-name:var(--font-display)] text-left text-xs font-semibold tracking-wide text-ink-soft"
+        />
         <Han className="text-[10px] text-ink-faint">{PILLAR_TERMS[pillar.slot].zh}</Han>
       </header>
 
@@ -61,8 +80,17 @@ function PillarColumn({ pillar, locale }: { pillar: Pillar; locale: Locale }) {
 
       <div className="flex flex-col items-center gap-1 px-3 py-4">
         {/* Ten god of the stem — the day pillar has none, it is the reference. */}
-        <span className="h-4 text-[11px] font-medium text-ink-faint">
-          {pillar.stemTenGod ? pick(TEN_GOD_TERMS[pillar.stemTenGod], locale) : '—'}
+        <span className="flex h-4 items-baseline text-[11px] font-medium text-ink-faint">
+          {pillar.stemTenGod ? (
+            <Term
+              term={pick(TEN_GOD_TERMS[pillar.stemTenGod], locale)}
+              plain={TEN_GOD_PLAIN[pillar.stemTenGod]}
+              mark={TEN_GOD_TERMS[pillar.stemTenGod].zh}
+              locale={locale}
+            />
+          ) : (
+            '—'
+          )}
         </span>
 
         {/* Heavenly stem */}
@@ -93,9 +121,13 @@ function PillarColumn({ pillar, locale }: { pillar: Pillar; locale: Locale }) {
           different numbers of hidden stems. */}
       <div className="flex-1 border-t border-rule px-3 py-2.5">
         <div className="mb-1.5 flex items-baseline justify-between">
-          <span className="text-[10px] font-semibold tracking-wide text-ink-faint uppercase">
-            {pick(UI.hiddenStems, locale)}
-          </span>
+          <Term
+            term={pick(UI.hiddenStems, locale)}
+            plain={CONCEPT_PLAIN.hiddenStems}
+            mark={UI.hiddenStems.zh}
+            locale={locale}
+            className="text-left text-[10px] font-semibold tracking-wide text-ink-faint uppercase"
+          />
           <Han className="text-[10px] text-ink-faint">藏干</Han>
         </div>
         <div className="space-y-0.5">
@@ -103,14 +135,30 @@ function PillarColumn({ pillar, locale }: { pillar: Pillar; locale: Locale }) {
             <HiddenStemRow key={`${h.stem}-${h.role}`} hidden={h} locale={locale} />
           ))}
         </div>
-        <div className="mt-1 text-[10px] text-ink-faint">
-          {pillar.hiddenStems.map((h) => pick(HIDDEN_ROLE_TERMS[h.role], locale)).join(' · ')}
+        <div className="mt-1 flex flex-wrap items-baseline gap-x-1 text-[10px] text-ink-faint">
+          {pillar.hiddenStems.map((h, i) => (
+            <span key={h.role} className="flex items-baseline gap-x-1">
+              {i > 0 && <span aria-hidden>·</span>}
+              <Term
+                term={pick(HIDDEN_ROLE_TERMS[h.role], locale)}
+                plain={HIDDEN_ROLE_PLAIN[h.role]}
+                mark={HIDDEN_ROLE_TERMS[h.role].zh}
+                locale={locale}
+              />
+            </span>
+          ))}
         </div>
       </div>
 
       {/* Twelve-phase state of the day master in this branch */}
       <footer className="flex items-center justify-between border-t border-rule px-3 py-2">
-        <span className="text-[11px] text-ink-soft">{pick(PHASE_TERMS[pillar.phase], locale)}</span>
+        <Term
+          term={pick(PHASE_TERMS[pillar.phase], locale)}
+          plain={PHASE_PLAIN[pillar.phase]}
+          mark={PHASE_TERMS[pillar.phase].zh}
+          locale={locale}
+          className="text-left text-[11px] text-ink-soft"
+        />
         <Han className="text-[11px] text-ink-faint">{PHASE_TERMS[pillar.phase].zh}</Han>
       </footer>
     </article>
@@ -120,7 +168,14 @@ function PillarColumn({ pillar, locale }: { pillar: Pillar; locale: Locale }) {
 export function PillarGrid({ chart, locale }: { chart: BaziChart; locale: Locale }) {
   return (
     <div>
-      <SectionTitle label={pick(UI.chart, locale)} mark={UI.chart.zh} />
+      <SectionTitle
+        label={<Term term={pick(UI.chart, locale)} plain={CONCEPT_PLAIN.chart} mark={UI.chart.zh} locale={locale} />}
+        mark={UI.chart.zh}
+      />
+      <p className="mb-3 text-[11px] leading-relaxed text-ink-faint">
+        {locale === 'vi' ? 'Bấm vào thuật ngữ gạch chân để xem giải thích, hoặc ' : 'Tap any underlined term for an explanation, or '}
+        <PlainToggleInline locale={locale} />.
+      </p>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         {SLOTS.map((slot) => (
           <PillarColumn key={slot} pillar={chart.pillars[slot]} locale={locale} />

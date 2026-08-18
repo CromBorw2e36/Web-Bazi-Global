@@ -160,9 +160,13 @@ for (const path of ['/today', '/profiles', '/journal', '/settings', '/']) {
   if (overflow > 0) fail(`${path} scrolls horizontally by ${overflow}px at 390px`)
 
   // Anything tappable needs a real target. 40px is the floor; 44 is the aim.
+  //
+  // `[data-inline-target]` is skipped: those are glossary words sitting inside a
+  // run of text, which WCAG 2.5.8 exempts by name, because a word cannot be
+  // 44px tall and still be a word. Controls must never carry that attribute.
   const small = await mp.evaluate(() => {
     const out = []
-    for (const el of document.querySelectorAll('button, a[href]')) {
+    for (const el of document.querySelectorAll('button:not([data-inline-target]), a[href]')) {
       const r = el.getBoundingClientRect()
       if (!r.width || !r.height) continue
       if (r.height < 40) out.push(`${(el.textContent || el.getAttribute('aria-label') || '?').trim().slice(0, 20)} h=${Math.round(r.height)}`)
@@ -175,7 +179,7 @@ for (const path of ['/today', '/profiles', '/journal', '/settings', '/']) {
 // The bottom tab row is the phone's primary navigation — it must be there.
 const tabs = await mp.locator('nav.fixed a').count()
 if (tabs !== 4) fail(`expected 4 bottom tabs on mobile, found ${tabs}`)
-console.log(`    5 pages at 390px: no overflow, no target under 40px, ${tabs} tabs`)
+console.log(`    5 pages at 390px: no overflow, no control under 40px, ${tabs} tabs`)
 
 await browser.close()
 if (!process.exitCode) console.log('\n  ✓ end-to-end flow passed')

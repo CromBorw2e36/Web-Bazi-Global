@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { auth, signOut } from '@/auth'
 import { Han } from './ui'
 import { ThemeToggle } from './ThemeToggle'
+import { PlainToggle } from './PlainToggle'
 
 const LINKS = [
   { href: '/today', vi: 'Hôm Nay', zh: '今日', icon: SunPath },
@@ -100,6 +101,7 @@ export async function AppNav({ active }: { active?: string }) {
           </nav>
 
           <div className="ml-auto flex shrink-0 items-center gap-2 sm:ml-0">
+            <PlainToggle />
             <ThemeToggle />
             {signedIn ? (
               <>

@@ -36,7 +36,7 @@ export function Han({ children, className = '' }: { children: React.ReactNode; c
 }
 
 /** A section heading with a hairline rule and a Han sub-mark. */
-export function SectionTitle({ label, mark }: { label: string; mark?: string }) {
+export function SectionTitle({ label, mark }: { label: React.ReactNode; mark?: string }) {
   return (
     <div className="mb-4 flex items-baseline gap-3">
       <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold tracking-tight text-ink">{label}</h2>

@@ -3,6 +3,13 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
+  Plain-language mode. Like the theme, it is a class on <html> rather than React
+  state: both wordings are in the markup and CSS chooses one, so switching costs
+  no re-render and server and client always emit identical HTML.
+*/
+@custom-variant plain (&:where(.plain, .plain *));
+
+/*
   Ink on paper.
 
   The interface chrome is deliberately colourless — warm paper, ink text,

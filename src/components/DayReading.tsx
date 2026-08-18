@@ -4,7 +4,13 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   BRANCH_TERMS,
+  CONCEPT_PLAIN,
+  ELEMENT_PLAIN,
   ELEMENT_TERMS,
+  PHASE_PLAIN,
+  PILLAR_PLAIN,
+  RELATION_PLAIN,
+  TEN_GOD_PLAIN,
   PHASE_TERMS,
   PILLAR_TERMS,
   RELATION_TERMS,
@@ -19,6 +25,7 @@ import {
 import type { DayView } from '@/app/actions/reading'
 import { saveJournal, toggleBookmark } from '@/app/actions/reading'
 import { ELEMENT_TEXT, Han, Panel, SectionTitle } from './ui'
+import { Term } from './Term'
 
 const BAND_LABEL: Record<string, { vi: string; en: string; tone: string }> = {
   AUSPICIOUS: { vi: 'Rất thuận', en: 'Auspicious', tone: 'text-wood border-wood/40 bg-wood/5' },
@@ -85,8 +92,20 @@ export function DayReading({
               <div className="font-[family-name:var(--font-display)] text-lg font-semibold text-ink">
                 {pick(STEM_TERMS[s.day.stem], locale)} {pick(BRANCH_TERMS[s.day.branch], locale)}
               </div>
-              <div className="mt-0.5 text-xs text-ink-soft">
-                {pick(TEN_GOD_TERMS[s.stemTenGod], locale)} · {pick(PHASE_TERMS[s.phase], locale)}
+              <div className="mt-0.5 flex flex-wrap items-baseline gap-x-1.5 text-xs text-ink-soft">
+                <Term
+                  term={pick(TEN_GOD_TERMS[s.stemTenGod], locale)}
+                  plain={TEN_GOD_PLAIN[s.stemTenGod]}
+                  mark={TEN_GOD_TERMS[s.stemTenGod].zh}
+                  locale={locale}
+                />
+                <span aria-hidden>·</span>
+                <Term
+                  term={pick(PHASE_TERMS[s.phase], locale)}
+                  plain={PHASE_PLAIN[s.phase]}
+                  mark={PHASE_TERMS[s.phase].zh}
+                  locale={locale}
+                />
               </div>
             </div>
           </div>
@@ -104,18 +123,40 @@ export function DayReading({
               <span key={`f-${element}`} className="inline-flex items-center gap-1.5 rounded-seal border border-wood/40 bg-wood/5 px-2.5 py-1 text-xs">
                 <span aria-hidden className="text-wood">＋</span>
                 <Han className={ELEMENT_TEXT[element]}>{ELEMENT_TERMS[element].zh}</Han>
-                <span className="text-ink-soft">{pick(ELEMENT_TERMS[element], locale)}</span>
+                <Term
+                  term={pick(ELEMENT_TERMS[element], locale)}
+                  plain={ELEMENT_PLAIN[element]}
+                  mark={ELEMENT_TERMS[element].zh}
+                  locale={locale}
+                  className="text-ink-soft"
+                />
                 {count > 1 && <span className="text-wood tabular-nums">×{count}</span>}
-                <span className="text-ink-faint">{vi ? 'dụng thần' : 'wanted'}</span>
+                <Term
+                  term={vi ? 'dụng thần' : 'wanted'}
+                  plain={CONCEPT_PLAIN.favourable}
+                  locale={locale}
+                  className="text-ink-faint"
+                />
               </span>
             ))}
             {groupHits(s.unfavourableHits).map(({ element, count }) => (
               <span key={`u-${element}`} className="inline-flex items-center gap-1.5 rounded-seal border border-fire/40 bg-fire/5 px-2.5 py-1 text-xs">
                 <span aria-hidden className="text-fire">－</span>
                 <Han className={ELEMENT_TEXT[element]}>{ELEMENT_TERMS[element].zh}</Han>
-                <span className="text-ink-soft">{pick(ELEMENT_TERMS[element], locale)}</span>
+                <Term
+                  term={pick(ELEMENT_TERMS[element], locale)}
+                  plain={ELEMENT_PLAIN[element]}
+                  mark={ELEMENT_TERMS[element].zh}
+                  locale={locale}
+                  className="text-ink-soft"
+                />
                 {count > 1 && <span className="text-fire tabular-nums">×{count}</span>}
-                <span className="text-ink-faint">{vi ? 'kỵ thần' : 'unwanted'}</span>
+                <Term
+                  term={vi ? 'kỵ thần' : 'unwanted'}
+                  plain={CONCEPT_PLAIN.unfavourable}
+                  locale={locale}
+                  className="text-ink-faint"
+                />
               </span>
             ))}
           </div>
@@ -138,8 +179,25 @@ export function DayReading({
                     {harmonious ? '＋' : '－'}
                   </span>
                   <Han className="text-ink">{RELATION_TERMS[r.type]?.zh ?? ''}</Han>
-                  <span className="text-ink-soft">{RELATION_TERMS[r.type] ? pick(RELATION_TERMS[r.type], locale) : r.type}</span>
-                  <span className="text-ink-faint">· {pick(PILLAR_TERMS[r.slot], locale)}</span>
+                  {RELATION_TERMS[r.type] && RELATION_PLAIN[r.type] ? (
+                    <Term
+                      term={pick(RELATION_TERMS[r.type], locale)}
+                      plain={RELATION_PLAIN[r.type]}
+                      mark={RELATION_TERMS[r.type].zh}
+                      locale={locale}
+                      className="text-ink-soft"
+                    />
+                  ) : (
+                    <span className="text-ink-soft">{r.type}</span>
+                  )}
+                  <span className="text-ink-faint" aria-hidden>·</span>
+                  <Term
+                    term={pick(PILLAR_TERMS[r.slot], locale)}
+                    plain={PILLAR_PLAIN[r.slot]}
+                    mark={PILLAR_TERMS[r.slot].zh}
+                    locale={locale}
+                    className="text-ink-faint"
+                  />
                 </li>
               )
             })}

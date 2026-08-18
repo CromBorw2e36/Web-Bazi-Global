@@ -2,6 +2,9 @@
 
 import {
   BRANCH_TERMS,
+  CONCEPT_PLAIN,
+  PILLAR_PLAIN,
+  RELATION_PLAIN,
   PILLAR_TERMS,
   RELATION_TERMS,
   STEM_TERMS,
@@ -12,6 +15,7 @@ import {
   type Relation,
 } from '@/lib/bazi'
 import { Han, Panel, SectionTitle } from './ui'
+import { Term } from './Term'
 
 /** Harmonies read as gathering, the rest as friction — enough to group them by. */
 const HARMONIOUS = new Set(['SIX_COMBINATION', 'COMBINATION'])
@@ -36,7 +40,17 @@ export function RelationList({ chart, locale }: { chart: BaziChart; locale: Loca
 
   return (
     <Panel>
-      <SectionTitle label={pick(UI.relations, locale)} mark={UI.relations.zh} />
+      <SectionTitle
+        label={
+          <Term
+            term={pick(UI.relations, locale)}
+            plain={CONCEPT_PLAIN.relations}
+            mark={UI.relations.zh}
+            locale={locale}
+          />
+        }
+        mark={UI.relations.zh}
+      />
 
       {relations.length === 0 ? (
         <p className="text-sm text-ink-faint">{pick(UI.noRelations, locale)}</p>
@@ -59,12 +73,32 @@ export function RelationList({ chart, locale }: { chart: BaziChart; locale: Loca
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium text-ink">
-                    {term ? pick(term, locale) : rel.type}
+                    {term && RELATION_PLAIN[rel.type] ? (
+                      <Term
+                        term={pick(term, locale)}
+                        plain={RELATION_PLAIN[rel.type]}
+                        mark={term.zh}
+                        locale={locale}
+                        className="text-left"
+                      />
+                    ) : (
+                      (term ? pick(term, locale) : rel.type)
+                    )}
                   </div>
                   <div className="truncate text-[11px] text-ink-faint">
                     {nameFor(rel, 0, locale)} · {nameFor(rel, 1, locale)}
                     {' — '}
-                    {rel.slots.map((s) => pick(PILLAR_TERMS[s], locale)).join(' / ')}
+                    {rel.slots.map((s, si) => (
+                      <span key={s}>
+                        {si > 0 && ' / '}
+                        <Term
+                          term={pick(PILLAR_TERMS[s], locale)}
+                          plain={PILLAR_PLAIN[s]}
+                          mark={PILLAR_TERMS[s].zh}
+                          locale={locale}
+                        />
+                      </span>
+                    ))}
                   </div>
                 </div>
               </li>

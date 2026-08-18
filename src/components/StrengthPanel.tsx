@@ -1,7 +1,10 @@
 'use client'
 
 import {
+  CONCEPT_PLAIN,
+  ELEMENT_PLAIN,
   ELEMENT_TERMS,
+  SEASON_PLAIN,
   SEASON_TERMS,
   STEM_TERMS,
   UI,
@@ -10,6 +13,7 @@ import {
   type Locale,
 } from '@/lib/bazi'
 import { ELEMENT_BG, ELEMENT_TEXT, Han, Panel, SectionTitle } from './ui'
+import { Term } from './Term'
 
 function ElementBar({
   chart,
@@ -28,7 +32,13 @@ function ElementBar({
         return (
           <div key={t.element} className="flex items-center gap-3">
             <Han className={`w-5 shrink-0 text-base ${ELEMENT_TEXT[t.element]}`}>{ELEMENT_TERMS[t.element].zh}</Han>
-            <span className="w-12 shrink-0 text-xs text-ink-soft">{pick(ELEMENT_TERMS[t.element], locale)}</span>
+            <Term
+              term={pick(ELEMENT_TERMS[t.element], locale)}
+              plain={ELEMENT_PLAIN[t.element]}
+              mark={ELEMENT_TERMS[t.element].zh}
+              locale={locale}
+              className="w-12 shrink-0 truncate text-left text-xs text-ink-soft plain:w-40"
+            />
             <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-paper-sunken">
               <div
                 className={`h-full rounded-full ${ELEMENT_BG[t.element]} transition-[width] duration-500`}
@@ -57,7 +67,12 @@ export function StrengthPanel({ chart, locale }: { chart: BaziChart; locale: Loc
 
   return (
     <Panel>
-      <SectionTitle label={pick(UI.strength, locale)} mark={UI.strength.zh} />
+      <SectionTitle
+        label={
+          <Term term={pick(UI.strength, locale)} plain={CONCEPT_PLAIN.strength} mark={UI.strength.zh} locale={locale} />
+        }
+        mark={UI.strength.zh}
+      />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <div>
@@ -67,7 +82,13 @@ export function StrengthPanel({ chart, locale }: { chart: BaziChart; locale: Loc
               {dmTerm.zh}
             </Han>
             <div>
-              <div className="text-[11px] tracking-wide text-ink-faint uppercase">{pick(UI.dayMaster, locale)}</div>
+              <Term
+                term={pick(UI.dayMaster, locale)}
+                plain={CONCEPT_PLAIN.dayMaster}
+                mark={UI.dayMaster.zh}
+                locale={locale}
+                className="block text-left text-[11px] tracking-wide text-ink-faint uppercase"
+              />
               <div className="text-sm font-medium text-ink">
                 {pick(dmTerm, locale)} · {pick(ELEMENT_TERMS[chart.dayMasterElement], locale)}
               </div>
@@ -76,9 +97,13 @@ export function StrengthPanel({ chart, locale }: { chart: BaziChart; locale: Loc
 
           {/* Strength verdict and score */}
           <div className="mb-2 flex items-baseline justify-between">
-            <span className="font-[family-name:var(--font-display)] text-base font-semibold text-ink">
-              {pick(verdict, locale)}
-            </span>
+            <Term
+              term={pick(verdict, locale)}
+              plain={s.strength === 'STRONG' ? CONCEPT_PLAIN.strong : CONCEPT_PLAIN.weak}
+              mark={verdict.zh}
+              locale={locale}
+              className="font-[family-name:var(--font-display)] text-left text-base font-semibold text-ink"
+            />
             <span className="text-xs tabular-nums text-ink-faint">{s.score.toFixed(1)} / 100</span>
           </div>
           <div className="relative h-2.5 overflow-hidden rounded-full bg-paper-sunken">
@@ -92,7 +117,14 @@ export function StrengthPanel({ chart, locale }: { chart: BaziChart; locale: Loc
 
           <dl className="mt-4 space-y-1.5 text-xs">
             <div className="flex justify-between">
-              <dt className="text-ink-faint">{pick(SEASON_TERMS[s.season], locale)}</dt>
+              <dt className="text-ink-faint">
+                <Term
+                  term={pick(SEASON_TERMS[s.season], locale)}
+                  plain={SEASON_PLAIN[s.season]}
+                  mark={SEASON_TERMS[s.season].zh}
+                  locale={locale}
+                />
+              </dt>
               <dd className="text-ink-soft tabular-nums">
                 {pick(UI.strength, locale)} {s.seasonalStrength}/5
               </dd>
@@ -117,16 +149,26 @@ export function StrengthPanel({ chart, locale }: { chart: BaziChart; locale: Loc
             ).map(([label, list, border]) => (
               <div key={label.en} className={`rounded-seal border ${border} bg-paper p-2.5`}>
                 <div className="mb-1.5 flex items-baseline gap-1.5">
-                  <span className="text-[10px] font-semibold tracking-wide text-ink-faint uppercase">
-                    {pick(label, locale)}
-                  </span>
-                  <Han className="text-[10px] text-ink-faint">{label.zh}</Han>
+                  <Term
+                    term={pick(label, locale)}
+                    plain={label === UI.favourable ? CONCEPT_PLAIN.favourable : CONCEPT_PLAIN.unfavourable}
+                    mark={label.zh}
+                    locale={locale}
+                    className="text-left text-[10px] font-semibold tracking-wide text-ink-faint uppercase"
+                  />
+                  <Han className="text-[10px] text-ink-faint plain:hidden">{label.zh}</Han>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {list.map((el) => (
                     <span key={el} className="inline-flex items-center gap-1 text-xs">
                       <Han className={ELEMENT_TEXT[el]}>{ELEMENT_TERMS[el].zh}</Han>
-                      <span className="text-ink-soft">{pick(ELEMENT_TERMS[el], locale)}</span>
+                      <Term
+                        term={pick(ELEMENT_TERMS[el], locale)}
+                        plain={ELEMENT_PLAIN[el]}
+                        mark={ELEMENT_TERMS[el].zh}
+                        locale={locale}
+                        className="text-ink-soft"
+                      />
                     </span>
                   ))}
                 </div>
@@ -137,9 +179,13 @@ export function StrengthPanel({ chart, locale }: { chart: BaziChart; locale: Loc
 
         <div>
           <div className="mb-3 flex items-baseline gap-2">
-            <span className="text-[10px] font-semibold tracking-wide text-ink-faint uppercase">
-              {pick(UI.distribution, locale)}
-            </span>
+            <Term
+              term={pick(UI.distribution, locale)}
+              plain={CONCEPT_PLAIN.distribution}
+              mark="五行"
+              locale={locale}
+              className="text-left text-[10px] font-semibold tracking-wide text-ink-faint uppercase"
+            />
             <Han className="text-[10px] text-ink-faint">五行</Han>
           </div>
           <ElementBar chart={chart} locale={locale} />

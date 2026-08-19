@@ -3,6 +3,8 @@
 import {
   BRANCH_TERMS,
   CONCEPT_PLAIN,
+  ELEMENT_PLAIN,
+  ELEMENT_TERMS,
   PILLAR_PLAIN,
   RELATION_PLAIN,
   PILLAR_TERMS,
@@ -14,11 +16,11 @@ import {
   type Locale,
   type Relation,
 } from '@/lib/bazi'
-import { Han, Panel, SectionTitle } from './ui'
+import { ELEMENT_TEXT, Han, Panel, SectionTitle } from './ui'
 import { Term } from './Term'
 
 /** Harmonies read as gathering, the rest as friction — enough to group them by. */
-const HARMONIOUS = new Set(['SIX_COMBINATION', 'COMBINATION'])
+const HARMONIOUS = new Set(['SIX_COMBINATION', 'COMBINATION', 'TRINE', 'HALF_TRINE'])
 
 function glyphFor(relation: Relation, index: number): string {
   const name = relation.members[index]
@@ -66,10 +68,19 @@ export function RelationList({ chart, locale }: { chart: BaziChart; locale: Loca
                   harmonious ? 'border-wood/35' : 'border-fire/30'
                 }`}
               >
-                <div className="flex items-center gap-1.5">
-                  <Han className="text-xl text-ink">{glyphFor(rel, 0)}</Han>
-                  <Han className={`text-xs ${harmonious ? 'text-wood' : 'text-fire'}`}>{term?.zh ?? ''}</Han>
-                  <Han className="text-xl text-ink">{glyphFor(rel, 1)}</Han>
+                {/* A trine has three members, everything else two, so the row
+                    is built from the list rather than from two fixed slots. */}
+                <div className="flex shrink-0 items-center gap-1.5">
+                  {rel.members.map((m, mi) => (
+                    <span key={`${m}-${mi}`} className="flex items-center gap-1.5">
+                      {mi > 0 && (
+                        <Han className={`text-xs ${harmonious ? 'text-wood' : 'text-fire'}`}>
+                          {mi === 1 ? (term?.zh ?? '') : '·'}
+                        </Han>
+                      )}
+                      <Han className="text-xl text-ink">{glyphFor(rel, mi)}</Han>
+                    </span>
+                  ))}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium text-ink">
@@ -84,9 +95,26 @@ export function RelationList({ chart, locale }: { chart: BaziChart; locale: Loca
                     ) : (
                       (term ? pick(term, locale) : rel.type)
                     )}
+                    {/* Which element the combination forms — the whole point of
+                        a trine, and meaningless on a clash, which forms none. */}
+                    {rel.element && (
+                      <>
+                        <span className="text-ink-faint"> · </span>
+                        <Han className={`text-sm ${ELEMENT_TEXT[rel.element]}`}>
+                          {ELEMENT_TERMS[rel.element].zh}
+                        </Han>{' '}
+                        <Term
+                          term={pick(ELEMENT_TERMS[rel.element], locale)}
+                          plain={ELEMENT_PLAIN[rel.element]}
+                          mark={ELEMENT_TERMS[rel.element].zh}
+                          locale={locale}
+                          className={`text-sm font-normal ${ELEMENT_TEXT[rel.element]}`}
+                        />
+                      </>
+                    )}
                   </div>
                   <div className="truncate text-[11px] text-ink-faint">
-                    {nameFor(rel, 0, locale)} · {nameFor(rel, 1, locale)}
+                    {rel.members.map((_, mi) => (mi === 0 ? '' : ' · ') + nameFor(rel, mi, locale)).join('')}
                     {' — '}
                     {rel.slots.map((s, si) => (
                       <span key={s}>

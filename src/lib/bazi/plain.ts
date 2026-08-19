@@ -155,6 +155,18 @@ export const ELEMENT_PLAIN: Record<Element, Plain> = {
 
 /** Quan hệ giữa các can chi — how two pillars act on each other. */
 export const RELATION_PLAIN: Record<string, Plain> = {
+  TRINE: p(
+    'Ba bên chụm lại một hướng',
+    'Three pull the same way',
+    'Ba con giáp trong lá số gộp thành một khối cùng một hành. Đây là quan hệ mạnh nhất: hành đó được đẩy lên hẳn, thành chỗ dựa lớn nếu là hành hợp với mình, và thành sức nặng đè lại nếu không.',
+    'Three branches in the chart merge into one element. The strongest of the combinations: that element is pushed up hard — a real support if the chart wants it, a real weight if it does not.',
+  ),
+  HALF_TRINE: p(
+    'Hai bên chụm một nửa',
+    'Half a gathering',
+    'Mới có hai trong ba con giáp của một khối, nên chỉ nghiêng về hành đó chứ chưa thành hẳn. Gặp con giáp còn thiếu trong vận hoặc trong năm thì khối mới đủ.',
+    'Two of the three branches are present, so the pull toward that element is real but unfinished. It completes when the missing branch turns up in a luck pillar or a year.',
+  ),
   SIX_COMBINATION: p(
     'Hai bên hợp nhau',
     'They pair up',

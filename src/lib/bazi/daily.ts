@@ -1,6 +1,6 @@
 import { BRANCH_RELATIONS, EARTHLY_BRANCHES, HEAVENLY_STEMS, STEM_RELATIONS } from './data/tables'
 import { branchOf, dayPillarJz, monthPillarJz, stemOf, yearPillarJz, baziYearOf } from './calendar'
-import { phaseOf, tenGodOf } from './analysis'
+import { halfTrineOf, phaseOf, tenGodOf } from './analysis'
 import { luckPillarAtAge } from './luck'
 import type { BaziChart, Element, LuckPillar, PillarSlot } from './types'
 
@@ -64,6 +64,14 @@ const W = {
   favourableElement: 2,
   unfavourableElement: -2,
   sixCombination: 2,
+  /*
+    Below a Six Harmony, not above it, even though a full Tam Hợp outranks one:
+    a transit meets the chart one branch at a time, so what forms here is only
+    ever the half. When the day completes a frame the chart already half-held,
+    it half-combines with each of those branches and the two ones add up on
+    their own.
+  */
+  halfTrine: 1,
   stemCombination: 1,
   clash: -3,
   clashDayPillar: -4,
@@ -152,6 +160,17 @@ export function buildDailySnapshot(chart: BaziChart, date: string): DailySnapsho
           weight,
         })
       }
+    }
+
+    const half = halfTrineOf(dayBranch, natal.branch)
+    if (half) {
+      relations.push({
+        type: 'HALF_TRINE',
+        scope: 'BRANCH',
+        slot,
+        members: [EARTHLY_BRANCHES[dayBranch - 1].name, EARTHLY_BRANCHES[natal.branch - 1].name],
+        weight: W.halfTrine,
+      })
     }
 
     for (const rel of STEM_RELATIONS) {

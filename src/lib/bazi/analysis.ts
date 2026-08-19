@@ -146,6 +146,58 @@ export function analyseStrength(
 const SLOTS: PillarSlot[] = ['year', 'month', 'day', 'hour']
 
 /**
+ * Tam Hợp — the four groups of three branches that combine into one element.
+ *
+ * Read out of the branch table's own `structure` column rather than written
+ * here: bazi_db already carries the frame each branch belongs to, and a second
+ * copy would be a second thing to keep right.
+ *
+ * The cardinal member (đế vượng) falls out of the same data — it is the branch
+ * whose own element is the frame's element, true for exactly one branch per
+ * group. The other two are the opening branch and the storage branch, and the
+ * storage one is always an Earth branch, which is what puts each group into the
+ * order it is traditionally named in: Thân-Tý-Thìn, not Tý-Thìn-Thân.
+ */
+export interface Trine {
+  element: Element
+  /** Branch ids in traditional order: opening, cardinal, storage. */
+  branches: [number, number, number]
+  /** The branch the group is named for; a half combination needs it. */
+  cardinal: number
+}
+
+export const TRINES: Trine[] = (() => {
+  const byElement = new Map<Element, number[]>()
+  for (const b of EARTHLY_BRANCHES) {
+    const list = byElement.get(b.structure) ?? []
+    list.push(b.id)
+    byElement.set(b.structure, list)
+  }
+
+  return [...byElement].map(([element, ids]) => {
+    const cardinal = ids.find((id) => EARTHLY_BRANCHES[id - 1].element === element)!
+    const storage = ids.find((id) => EARTHLY_BRANCHES[id - 1].element === 'EARTH')!
+    const opening = ids.find((id) => id !== cardinal && id !== storage)!
+    return { element, branches: [opening, cardinal, storage] as [number, number, number], cardinal }
+  })
+})()
+
+/**
+ * The group two branches half-combine into, or null.
+ *
+ * A pair only carries the frame if it includes the cardinal branch. Without it —
+ * Thân with Thìn, say — the two ends of the group are present but the thing they
+ * were supposed to gather around is missing, and most schools read that as no
+ * combination at all rather than a weak one.
+ */
+export function halfTrineOf(a: number, b: number): Trine | null {
+  if (a === b) return null
+  const group = TRINES.find((t) => t.branches.includes(a) && t.branches.includes(b))
+  if (!group) return null
+  return a === group.cardinal || b === group.cardinal ? group : null
+}
+
+/**
  * Finds every stem and branch relationship present between the four pillars.
  *
  * Self-punishment rows point a branch at itself, so they only fire when the same
@@ -189,6 +241,33 @@ export function findRelations(pillars: Record<PillarSlot, Pillar>): Relation[] {
         }
       }
     }
+  }
+
+  /*
+    Tam Hợp, which the pairwise walk above cannot see: it is a three-branch
+    agreement, and the relationship table it walks holds only pairs.
+
+    Reported once per group, full combination in preference to half, so a chart
+    holding all three does not also list the two halves inside it. Slots are
+    every pillar carrying a member — four of them when a branch repeats — while
+    members stay the three distinct branches of the frame.
+  */
+  for (const group of TRINES) {
+    const slots = SLOTS.filter((slot) => group.branches.includes(pillars[slot].branch))
+    if (slots.length < 2) continue
+
+    const present = [...new Set(slots.map((slot) => pillars[slot].branch))]
+    const full = present.length === 3
+    if (!full && !present.includes(group.cardinal)) continue
+
+    const order = full ? group.branches : group.branches.filter((b) => present.includes(b))
+    found.push({
+      type: full ? 'TRINE' : 'HALF_TRINE',
+      slots,
+      members: order.map((b) => EARTHLY_BRANCHES[b - 1].name),
+      scope: 'BRANCH',
+      element: group.element,
+    })
   }
 
   return found

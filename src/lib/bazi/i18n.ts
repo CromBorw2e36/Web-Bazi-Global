@@ -130,6 +130,8 @@ export const PHASE_TERMS: Record<number, Term> = {
 /** Relationship names as they appear in the EBR and HSR tables. */
 export const RELATION_TERMS: Record<string, Term> = {
   SIX_COMBINATION: t('Lục Hợp', 'Six Harmony', '六合'),
+  TRINE: t('Tam Hợp', 'Three Harmony', '三合'),
+  HALF_TRINE: t('Bán Hợp', 'Half Harmony', '半合'),
   CLASH: t('Xung', 'Clash', '沖'),
   DESTRUCTION: t('Phá', 'Destruction', '破'),
   HARM: t('Hại', 'Harm', '害'),

@@ -87,9 +87,11 @@ export interface Relation {
   type: string
   /** Pillar slots involved. */
   slots: PillarSlot[]
-  /** Human-readable pair, e.g. ["ZI", "WU"]. */
+  /** Human-readable members, e.g. ["ZI", "WU"]. Three of them for a trine. */
   members: string[]
   scope: 'STEM' | 'BRANCH'
+  /** The element a combination forms. Only combinations carry one. */
+  element?: Element
 }
 
 export interface LuckPillar {
